@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AuctionHub</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header>
+        <h1>AuctionHub</h1>
+        <p class="subtitle">Прототип интернет-аукциона</p>
+    </header>
+
+    <main>
+        <section id="user-section">
+            <h2>Пользователь</h2>
+            <div id="user-info">Не авторизован</div>
+            <form id="user-form">
+                <input type="email" id="email" placeholder="email" required>
+                <input type="password" id="password" placeholder="пароль (мин. 6)" required>
+                <select id="role">
+                    <option value="seller">Продавец</option>
+                    <option value="bidder">Участник</option>
+                </select>
+                <label>
+                    <input type="checkbox" id="age-confirmed" required>
+                    Мне 18 лет или больше
+                </label>
+                <button type="submit">Зарегистрироваться</button>
+            </form>
+            <div id="user-message" class="message"></div>
+        </section>
+
+        <section id="auctions-section">
+            <h2>Аукционы</h2>
+            <button id="refresh-auctions">Обновить список</button>
+            <div id="auctions-list"></div>
+        </section>
+
+        <section id="lot-section" hidden>
+            <h2>Лот: <span id="lot-title"></span></h2>
+            <div id="lot-details"></div>
+
+            <h3>Сделать ставку</h3>
+            <form id="bid-form">
+                <input type="number" id="bid-amount" step="0.01" min="0.01"
+                       placeholder="Сумма" required>
+                <button type="submit">Поставить</button>
+            </form>
+            <div id="bid-message" class="message"></div>
+
+            <h3>История ставок</h3>
+            <div id="bids-list"></div>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>
