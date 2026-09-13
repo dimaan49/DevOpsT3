@@ -13,6 +13,7 @@
 - Qt 6 (Core, Network, Sql, HttpServer)
 - PostgreSQL
 - CMake + Ninja
+- easylogging++ — для логирования
 - Catch2 (планируется)
 - clang-format, clang-tidy
 
