@@ -240,7 +240,7 @@ void AuctionHandler::registerRoutes(QHttpServer &server)
                      }
                      return api::created(lotToJson(*lot));
                  });
-}
+
 
 server.route("/api/auctions/<arg>/cancel",
              QHttpServerRequest::Method::Post,
@@ -277,5 +277,6 @@ server.route("/api/auctions/<arg>/cancel",
             return api::serverError("Failed to cancel auction");
         }
     });
-
+}
 } // namespace auctionhub::handlers
+
