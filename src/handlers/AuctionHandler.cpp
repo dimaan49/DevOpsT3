@@ -242,4 +242,40 @@ void AuctionHandler::registerRoutes(QHttpServer &server)
                  });
 }
 
+server.route("/api/auctions/<arg>/cancel",
+             QHttpServerRequest::Method::Post,
+    [](qint64 id, const QHttpServerRequest &req) -> QHttpServerResponse {
+
+        const QByteArray userIdHeader = req.value("X-User-Id");
+        if (userIdHeader.isEmpty()) {
+            return api::unauthorized("X-User-Id header is required");
+        }
+        bool ok = false;
+        const qint64 userId = userIdHeader.toLongLong(&ok);
+        if (!ok || userId <= 0) {
+            return api::unauthorized("X-User-Id header is invalid");
+        }
+
+        const int result = models::AuctionRepository::cancel(id, userId);
+        switch (result) {
+        case 0: {
+            const auto updated = models::AuctionRepository::findById(id);
+            if (!updated.has_value()) {
+                return api::serverError("Auction cancelled but not found");
+            }
+            return api::ok(auctionToJson(*updated));
+        }
+        case -2:
+            return api::notFound(QString("Auction %1 not found").arg(id));
+        case -3:
+            return api::forbidden("Only the seller can cancel this auction");
+        case -4:
+            return api::conflict("Auction cannot be cancelled in its current status");
+        case -5:
+            return api::conflict("Cannot cancel auction: it already has bids");
+        default:
+            return api::serverError("Failed to cancel auction");
+        }
+    });
+
 } // namespace auctionhub::handlers
