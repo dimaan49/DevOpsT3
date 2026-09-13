@@ -277,6 +277,97 @@ button:hover {
     background: #f8f9fb;
 }
 
+/* --- Формы продавца --- */
+
+.form-card {
+    background: #fff;
+    border: 1px solid #e5e8ef;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-header p,
+.section-description {
+    color: #6b7280;
+    margin-top: 6px;
+    line-height: 1.5;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.form-group small {
+    color: #6b7280;
+    font-size: 13px;
+    margin-top: 6px;
+    line-height: 1.4;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.form-card input,
+.form-card textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-card textarea {
+    min-height: 140px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.seller-block {
+    margin-top: 32px;
+}
+
+.management-divider {
+    height: 1px;
+    background: #e5e8ef;
+    margin: 28px 0;
+}
+
+#auction-management {
+    margin-top: 28px;
+}
+
+#auction-management h4 {
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.auction-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#delete-auction {
+    background: #dc2626;
+}
+
+#delete-auction:hover {
+    background: #b91c1c;
+}
+
 @media (max-width: 800px) {
     #user-form {
         grid-template-columns: 1fr 1fr;
