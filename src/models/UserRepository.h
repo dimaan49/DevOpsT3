@@ -23,6 +23,12 @@ public:
 
     // Проверка существования email.
     static bool emailExists(const QString &email);
+	// Хэширует пароль SHA-256.
+	static QString hashPassword(const QString &password);
+
+	// Проверяет пароль. Возвращает пользователя, если пароль верный.
+	static std::optional<User> verifyPassword(const QString &email,
+                                          const QString &password);
 };
 
 } // namespace auctionhub::models

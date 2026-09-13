@@ -2,6 +2,7 @@
 
 #include "../db/Database.h"
 
+#include <QCryptographicHash>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
@@ -102,4 +103,23 @@ bool UserRepository::emailExists(const QString &email)
     return q.next();
 }
 
+QString UserRepository::hashPassword(const QString &password)
+{
+    const QByteArray hash = QCryptographicHash::hash(
+        password.toUtf8(), QCryptographicHash::Sha256);
+    return QString::fromLatin1(hash.toHex());
+}
+
+std::optional<User> UserRepository::verifyPassword(const QString &email,
+                                                   const QString &password)
+{
+    const auto user = findByEmail(email);
+    if (!user.has_value()) {
+        return std::nullopt;
+    }
+    if (UserRepository::hashPassword(password) != user->passwordHash) {
+        return std::nullopt;
+    }
+    return user;
+}
 } // namespace auctionhub::models
