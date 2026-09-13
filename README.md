@@ -13,7 +13,7 @@
 - Qt 6 (Core, Network, Sql, HttpServer)
 - PostgreSQL
 - CMake + Ninja
-- Catch2 (планируется)
+- Catch2 -- для модульных тестов 
 - clang-format, clang-tidy
 
 ## Структура проекта
