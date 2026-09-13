@@ -53,6 +53,14 @@ qt_add_executable(auctionhub_server
     src/handlers/AuctionHandler.cpp
     src/handlers/BidHandler.h
     src/handlers/BidHandler.cpp
+    src/server/jwt.h
+    src/server/jwt.cpp
+    src/server/auth.h
+    src/server/auth.cpp
+    src/models/RevokedTokenRepository.h
+    src/models/RevokedTokenRepository.cpp
+    src/handlers/AuthHandler.h
+    src/handlers/AuthHandler.cpp
 )
 
 target_include_directories(auctionhub_server PRIVATE
