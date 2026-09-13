@@ -5,55 +5,238 @@
     <title>AuctionHub</title>
     <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-    <header>
-        <h1>AuctionHub</h1>
-        <p class="subtitle">Прототип интернет-аукциона</p>
-    </header>
+<header>
+    <h1>AuctionHub</h1>
+    <p class="subtitle">Прототип интернет-аукциона</p>
+</header>
 
-    <main>
-        <section id="user-section">
-            <h2>Пользователь</h2>
-            <div id="user-info">Не авторизован</div>
-            <form id="user-form">
-                <input type="email" id="email" placeholder="email" required>
-                <input type="password" id="password" placeholder="пароль (мин. 6)" required>
-                <select id="role">
-                    <option value="seller">Продавец</option>
-                    <option value="bidder">Участник</option>
-                </select>
-                <label>
-                    <input type="checkbox" id="age-confirmed" required>
-                    Мне 18 лет или больше
-                </label>
-                <button type="submit">Зарегистрироваться</button>
+<main>
+
+    <section id="user-section">
+        <h2>Пользователь</h2>
+
+        <div id="user-info">Не авторизован</div>
+
+        <form id="user-form">
+            <input type="email" id="email" placeholder="email" required>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="пароль (мин. 6)"
+                required
+            >
+
+            <select id="role">
+                <option value="seller">Продавец</option>
+                <option value="bidder">Участник</option>
+            </select>
+
+            <label>
+                <input type="checkbox" id="age-confirmed" required>
+                Мне 18 лет или больше
+            </label>
+
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div id="user-message" class="message"></div>
+    </section>
+
+
+    <!-- Управление продавца -->
+    <section id="seller-section" hidden>
+        <div class="section-header">
+            <h2>Управление аукционами</h2>
+            <p>Создайте аукцион, добавьте в него лоты и опубликуйте его для участников.</p>
+        </div>
+
+        <div class="form-card">
+            <h3>Создать аукцион</h3>
+
+            <form id="auction-form">
+                <div class="form-group">
+                    <label for="auction-title">Название аукциона</label>
+                    <input
+                        type="text"
+                        id="auction-title"
+                        placeholder="Например: Аукцион электроники"
+                        required
+                    >
+                    <small>Короткое и понятное название, по которому участники смогут найти аукцион.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="auction-description">Описание аукциона</label>
+                    <textarea
+                        id="auction-description"
+                        placeholder="Расскажите, что будет продаваться на аукционе, какие действуют условия участия, сроки проведения и другую важную информацию..."
+                        rows="7"
+                        required
+                    ></textarea>
+                    <small>Укажите основные условия аукциона и информацию, которую должен знать участник.</small>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="auction-step">Шаг ставки</label>
+                        <input
+                            type="number"
+                            id="auction-step"
+                            placeholder="Например: 100"
+                            step="0.01"
+                            min="0.01"
+                            required
+                        >
+                        <small>Минимальная сумма увеличения ставки.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="auction-start-price">Начальная цена</label>
+                        <input
+                            type="number"
+                            id="auction-start-price"
+                            placeholder="Например: 1000"
+                            step="0.01"
+                            min="0.01"
+                            required
+                        >
+                        <small>Цена, с которой начинается торг.</small>
+                    </div>
+                </div>
+
+                <button type="submit">Создать аукцион</button>
             </form>
-            <div id="user-message" class="message"></div>
-        </section>
 
-        <section id="auctions-section">
-            <h2>Аукционы</h2>
-            <button id="refresh-auctions">Обновить список</button>
-            <div id="auctions-list"></div>
-        </section>
+            <div id="auction-message" class="message"></div>
+        </div>
 
-        <section id="lot-section" hidden>
-            <h2>Лот: <span id="lot-title"></span></h2>
-            <div id="lot-details"></div>
+        <div class="seller-block">
+            <h3>Мои аукционы</h3>
+            <p class="section-description">Здесь отображаются созданные вами аукционы.</p>
+            <div id="my-auctions-list"></div>
+        </div>
 
-            <h3>Сделать ставку</h3>
-            <form id="bid-form">
-                <input type="number" id="bid-amount" step="0.01" min="0.01"
-                       placeholder="Сумма" required>
-                <button type="submit">Поставить</button>
-            </form>
-            <div id="bid-message" class="message"></div>
+        <!-- Управление выбранным аукционом -->
+        <div id="auction-management" hidden>
+            <div class="form-card">
+                <h3>Управление выбранным аукционом</h3>
+                <div id="selected-auction-details"></div>
 
-            <h3>История ставок</h3>
-            <div id="bids-list"></div>
-        </section>
-    </main>
+                <div class="management-divider"></div>
 
-    <script src="/app.js"></script>
+                <h4>Добавить лот</h4>
+                <p class="section-description">
+                    Лот — отдельный товар или объект, который будет выставлен на торги.
+                </p>
+
+                <form id="lot-form">
+                    <div class="form-group">
+                        <label for="new-lot-title">Название лота</label>
+                        <input
+                            type="text"
+                            id="new-lot-title"
+                            placeholder="Например: iPhone 15 Pro 256 GB"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-lot-description">Описание лота</label>
+                        <textarea
+                            id="new-lot-description"
+                            placeholder="Опишите товар: состояние, характеристики, комплектацию и другую важную информацию..."
+                            rows="6"
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-lot-start-price">Начальная цена лота</label>
+                        <input
+                            type="number"
+                            id="new-lot-start-price"
+                            placeholder="Например: 500"
+                            step="0.01"
+                            min="0.01"
+                            required
+                        >
+                        <small>Цена, с которой начинается торг за этот лот.</small>
+                    </div>
+
+                    <button type="submit">Добавить лот</button>
+                </form>
+
+                <div id="lot-management-message" class="message"></div>
+
+                <div class="management-divider"></div>
+
+                <div class="auction-actions">
+                    <button id="publish-auction" type="button">
+                        Опубликовать аукцион
+                    </button>
+                    <button id="cancel-auction" type="button">
+                        Отменить аукцион
+                    </button>
+                    <button id="delete-auction" type="button">
+                        Удалить аукцион
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Список аукционов -->
+    <section id="auctions-section">
+
+        <h2>Аукционы</h2>
+
+        <button id="refresh-auctions">
+            Обновить список
+        </button>
+
+        <div id="auctions-list"></div>
+
+    </section>
+
+
+    <!-- Лот -->
+    <section id="lot-section" hidden>
+
+        <h2>Лот: <span id="lot-title"></span></h2>
+
+        <div id="lot-details"></div>
+
+        <h3>Сделать ставку</h3>
+
+        <form id="bid-form">
+
+            <input
+                type="number"
+                id="bid-amount"
+                step="0.01"
+                min="0.01"
+                placeholder="Сумма"
+                required
+            >
+
+            <button type="submit">Поставить</button>
+        </form>
+
+        <div id="bid-message" class="message"></div>
+
+        <h3>История ставок</h3>
+
+        <div id="bids-list"></div>
+
+    </section>
+
+</main>
+
+<script src="/app.js"></script>
+
 </body>
 </html>

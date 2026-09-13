@@ -122,6 +122,82 @@ bool AuctionRepository::updateStatus(qint64 id, const QString &status)
     return q.numRowsAffected() > 0;
 }
 
+bool AuctionRepository::remove(qint64 id, qint64 sellerId)
+{
+    const auto auction = findById(id);
+
+    if (!auction.has_value()) {
+        return false;
+    }
+
+    if (auction->sellerId != sellerId) {
+        return false;
+    }
+
+    // Удаление разрешено только если по аукциону нет ставок.
+    QSqlQuery bidsCheck(db::Database::handle());
+    bidsCheck.prepare(R"(
+        SELECT 1
+        FROM bids b
+        JOIN lots l ON l.id = b.lot_id
+        WHERE l.auction_id = :auction_id
+        LIMIT 1
+    )");
+    bidsCheck.bindValue(":auction_id", id);
+
+    if (!bidsCheck.exec()) {
+        qCritical() << "AuctionRepository::remove: bids check failed:"
+                    << bidsCheck.lastError().text();
+        return false;
+    }
+
+    if (bidsCheck.next()) {
+        return false;
+    }
+
+    QSqlDatabase db = db::Database::handle();
+
+    if (!db.transaction()) {
+        qCritical() << "AuctionRepository::remove: failed to start transaction";
+        return false;
+    }
+
+    QSqlQuery deleteLots(db);
+    deleteLots.prepare(
+        "DELETE FROM lots WHERE auction_id = :auction_id"
+    );
+    deleteLots.bindValue(":auction_id", id);
+
+    if (!deleteLots.exec()) {
+        qCritical() << "AuctionRepository::remove: failed to delete lots:"
+                    << deleteLots.lastError().text();
+        db.rollback();
+        return false;
+    }
+
+    QSqlQuery deleteAuction(db);
+    deleteAuction.prepare(
+        "DELETE FROM auctions WHERE id = :id AND seller_id = :seller_id"
+    );
+    deleteAuction.bindValue(":id", id);
+    deleteAuction.bindValue(":seller_id", sellerId);
+
+    if (!deleteAuction.exec() || deleteAuction.numRowsAffected() == 0) {
+        qCritical() << "AuctionRepository::remove: failed to delete auction:"
+                    << deleteAuction.lastError().text();
+        db.rollback();
+        return false;
+    }
+
+    if (!db.commit()) {
+        qCritical() << "AuctionRepository::remove: failed to commit transaction";
+        db.rollback();
+        return false;
+    }
+
+    return true;
+}
+
 int AuctionRepository::cancel(qint64 id, qint64 sellerId)
 {
     const auto auction = findById(id);

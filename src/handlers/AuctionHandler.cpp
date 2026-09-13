@@ -182,6 +182,50 @@ void AuctionHandler::registerRoutes(QHttpServer &server)
                      return api::ok(auctionToJson(*updated));
                  });
 
+    // DELETE /api/auctions/{id} — удалить аукцион
+    server.route("/api/auctions/<arg>",
+                 QHttpServerRequest::Method::Delete,
+                 [](qint64 id, const QHttpServerRequest &req) -> QHttpServerResponse {
+                     const QByteArray userIdHeader = req.value("X-User-Id");
+
+                     if (userIdHeader.isEmpty()) {
+                         return api::unauthorized("X-User-Id header is required");
+                     }
+
+                     bool ok = false;
+                     const qint64 userId = userIdHeader.toLongLong(&ok);
+
+                     if (!ok || userId <= 0) {
+                         return api::unauthorized("X-User-Id header is invalid");
+                     }
+
+                     const auto auction = models::AuctionRepository::findById(id);
+
+                     if (!auction.has_value()) {
+                         return api::notFound(
+                             QString("Auction %1 not found").arg(id)
+                         );
+                     }
+
+                     if (auction->sellerId != userId) {
+                         return api::forbidden(
+                             "Only the seller can delete this auction"
+                         );
+                     }
+
+                     if (!models::AuctionRepository::remove(id, userId)) {
+                         return api::conflict(
+                             "Cannot delete auction: it has bids or deletion failed"
+                         );
+                     }
+
+                     QJsonObject result;
+                     result["id"] = id;
+                     result["message"] = "Auction deleted";
+
+                     return api::ok(result);
+                 });
+
     // POST /api/auctions/{id}/lots — добавить лот
     server.route("/api/auctions/<arg>/lots",
                  QHttpServerRequest::Method::Post,
