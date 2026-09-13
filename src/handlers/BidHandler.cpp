@@ -4,6 +4,7 @@
 #include "../models/BidRepository.h"
 #include "../models/LotRepository.h"
 #include "../models/UserRepository.h"
+#include "../server/auth.h"
 
 #include <QHttpServerRequest>
 #include <QJsonArray>
@@ -68,23 +69,17 @@ void BidHandler::registerRoutes(QHttpServer &server)
                  QHttpServerRequest::Method::Post,
                  [](qint64 lotId, const QHttpServerRequest &req) -> QHttpServerResponse {
 
-                     const QByteArray userIdHeader = req.value("X-User-Id");
-                     if (userIdHeader.isEmpty()) {
-                         return api::unauthorized("X-User-Id header is required");
-                     }
-                     bool ok = false;
-                     const qint64 bidderId = userIdHeader.toLongLong(&ok);
-                     if (!ok || bidderId <= 0) {
-                         return api::unauthorized("X-User-Id header is invalid");
-                     }
+					const auto user = server::authenticate(req);
+					if (!user.has_value()) {
+						return api::unauthorized("Invalid or expired token");
+					}
+					const qint64 userId = user->id;
 
-                     const auto bidder = models::UserRepository::findById(bidderId);
-                     if (!bidder.has_value()) {
-                         return api::unauthorized("Bidder not found");
-                     }
-                     if (bidder->role != "bidder" && bidder->role != "seller") {
-                         return api::forbidden("Only bidders can place bids");
-                     }
+					if (user->role != "bidder" && user->role != "seller") {
+						return api::forbidden("Only bidders can place bids");
+					}
+					const qint64 bidderId = user->id;
+
 
                      QString parseError;
                      const QJsonObject body = parseJsonBody(req.body(), parseError);

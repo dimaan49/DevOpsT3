@@ -37,6 +37,12 @@ CREATE TABLE IF NOT EXISTS bids (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+    id          BIGSERIAL PRIMARY KEY,
+    token       TEXT NOT NULL UNIQUE,
+    revoked_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_bids_lot_created
     ON bids (lot_id, created_at DESC);
 
@@ -45,3 +51,6 @@ CREATE INDEX IF NOT EXISTS idx_auctions_seller
 
 CREATE INDEX IF NOT EXISTS idx_lots_auction
     ON lots (auction_id);
+
+CREATE INDEX IF NOT EXISTS idx_revoked_tokens_token
+    ON revoked_tokens (token);

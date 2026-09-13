@@ -4,6 +4,7 @@
 #include "../models/AuctionRepository.h"
 #include "../models/LotRepository.h"
 #include "../models/UserRepository.h"
+#include "../server/auth.h"
 
 #include <QHttpServerRequest>
 #include <QJsonArray>
@@ -65,23 +66,16 @@ void AuctionHandler::registerRoutes(QHttpServer &server)
                  [](const QHttpServerRequest &req) -> QHttpServerResponse {
 
                      // Продавец идентифицируется заголовком X-User-Id. упрощенка
-                     const QByteArray userIdHeader = req.value("X-User-Id");
-                     if (userIdHeader.isEmpty()) {
-                         return api::unauthorized("X-User-Id header is required");
-                     }
-                     bool ok = false;
-                     const qint64 sellerId = userIdHeader.toLongLong(&ok);
-                     if (!ok || sellerId <= 0) {
-                         return api::unauthorized("X-User-Id header is invalid");
-                     }
+					const auto user = server::authenticate(req);
+					if (!user.has_value()) {
+						return api::unauthorized("Invalid or expired token");
+					}
+					const qint64 userId = user->id;
 
-                     const auto seller = models::UserRepository::findById(sellerId);
-                     if (!seller.has_value()) {
-                         return api::unauthorized("Seller not found");
-                     }
-                     if (seller->role != "seller") {
-                         return api::forbidden("Only sellers can create auctions");
-                     }
+					if (user->role != "seller") {
+						return api::forbidden("Only sellers can create auctions");
+					}
+					const qint64 sellerId = user->id;
 
                      QString parseError;
                      const QJsonObject body = parseJsonBody(req.body(), parseError);

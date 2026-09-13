@@ -14,14 +14,7 @@ namespace auctionhub::handlers {
 
 namespace {
 
-// Хэш пароля через SHA-256. Для прототипа достаточно.
-// TODO: заменить на bcrypt/argon2.
-QString hashPassword(const QString &password)
-{
-    const QByteArray hash = QCryptographicHash::hash(
-        password.toUtf8(), QCryptographicHash::Sha256);
-    return QString::fromLatin1(hash.toHex());
-}
+
 
 // Проверка простого формата email: есть @ и точка после неё.
 bool isEmailValid(const QString &email)
@@ -91,8 +84,7 @@ void UserHandler::registerRoutes(QHttpServer &server)
             if (models::UserRepository::emailExists(email)) {
                 return api::conflict("Email already registered");
             }
-
-            const QString hash = hashPassword(password);
+			const QString hash = models::UserRepository::hashPassword(password);
             const qint64 id = models::UserRepository::create(email, hash, role, ageOk);
 
             if (id == -2) {
