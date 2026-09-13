@@ -122,4 +122,45 @@ bool AuctionRepository::updateStatus(qint64 id, const QString &status)
     return q.numRowsAffected() > 0;
 }
 
+int AuctionRepository::cancel(qint64 id, qint64 sellerId)
+{
+    const auto auction = findById(id);
+    if (!auction.has_value()) {
+        return -2;
+    }
+
+    if (auction->sellerId != sellerId) {
+        return -3;
+    }
+
+    if (auction->status == "finished" || auction->status == "cancelled") {
+        return -4;
+    }
+
+    // Проверяем, есть ли ставки по лотам этого аукциона.
+    QSqlQuery q(db::Database::handle());
+    q.prepare(R"(
+        SELECT 1
+        FROM bids b
+        JOIN lots l ON l.id = b.lot_id
+        WHERE l.auction_id = :auction_id
+        LIMIT 1
+    )");
+    q.bindValue(":auction_id", id);
+
+    if (!q.exec()) {
+        qCritical() << "AuctionRepository::cancel: bids check failed:"
+                    << q.lastError().text();
+        return -1;
+    }
+    if (q.next()) {
+        return -5;
+    }
+
+    if (!updateStatus(id, "cancelled")) {
+        return -1;
+    }
+    return 0;
+}
+
 } // namespace auctionhub::models

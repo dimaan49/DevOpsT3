@@ -27,6 +27,8 @@ public:
 
     // Изменить статус. Возвращает true при успехе.
     static bool updateStatus(qint64 id, const QString &status);
+
+	static int cancel(qint64 id, qint64 sellerId);
 };
 
 } // namespace auctionhub::models
