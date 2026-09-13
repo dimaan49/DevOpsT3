@@ -7,44 +7,158 @@
 </head>
 
 <body>
-<header>
-    <h1>AuctionHub</h1>
-    <p class="subtitle">Прототип интернет-аукциона</p>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="brand">
+            <div class="brand-mark">A</div>
+            <div>
+                <h1>AuctionHub</h1>
+                <span>Интернет-аукционы</span>
+            </div>
+        </div>
+
+        <nav class="main-nav">
+            <a href="#auctions-section">Аукционы</a>
+            <a href="#seller-section" id="seller-nav-link">Мои аукционы</a>
+        </nav>
+
+        <div class="header-account">
+            <button id="account-button" class="account-button" type="button" hidden>
+                <span id="account-avatar" class="account-avatar">A</span>
+                <span id="account-name">Аккаунт</span>
+                <span class="account-chevron">⌄</span>
+            </button>
+
+            <div id="account-menu" class="account-menu" hidden>
+                <div class="account-menu-user">
+                    <div id="account-menu-avatar" class="account-avatar large">A</div>
+                    <div>
+                        <strong id="account-menu-email">Пользователь</strong>
+                        <span id="account-menu-role">Участник</span>
+                    </div>
+                </div>
+                <div class="account-menu-divider"></div>
+                <button id="account-logout" type="button">Выйти</button>
+            </div>
+        </div>
+    </div>
 </header>
 
 <main>
 
-    <section id="user-section">
-        <h2>Пользователь</h2>
+    <section id="user-section" class="auth-section">
+        <div class="auth-layout">
+            <div class="auth-intro">
+                <span class="eyebrow">AUCTIONHUB</span>
+                <h2>Участвуйте в торгах.<br>Находите редкие вещи.</h2>
+                <p>
+                    Покупайте и выставляйте товары на открытых аукционах
+                    в одном удобном месте.
+                </p>
+            </div>
 
-        <div id="user-info">Не авторизован</div>
+            <div class="auth-card">
+                <div id="user-info" class="auth-user-info" hidden></div>
 
-        <form id="user-form">
-            <input type="email" id="email" placeholder="email" required>
+                <div id="login-block">
+                    <div class="auth-card-header">
+                        <h3>Добро пожаловать</h3>
+                        <p>Войдите в свой аккаунт</p>
+                    </div>
 
-            <input
-                type="password"
-                id="password"
-                placeholder="пароль (мин. 6)"
-                required
-            >
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input
+                                type="email"
+                                id="login-email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
 
-            <select id="role">
-                <option value="seller">Продавец</option>
-                <option value="bidder">Участник</option>
-            </select>
+                        <div class="form-group">
+                            <label for="login-password">Пароль</label>
+                            <input
+                                type="password"
+                                id="login-password"
+                                placeholder="Введите пароль"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
 
-            <label>
-                <input type="checkbox" id="age-confirmed" required>
-                Мне 18 лет или больше
-            </label>
+                        <button type="submit" class="primary-action">
+                            Войти
+                        </button>
+                    </form>
 
-            <button type="submit">Зарегистрироваться</button>
-        </form>
+                    <div id="login-message" class="message"></div>
 
-        <div id="user-message" class="message"></div>
+                    <p class="auth-switch">
+                        Нет аккаунта? <a href="#" id="show-register">Создать аккаунт</a>
+                    </p>
+                </div>
+
+                <div id="register-block" hidden>
+                    <div class="auth-card-header">
+                        <h3>Создать аккаунт</h3>
+                        <p>Регистрация занимает меньше минуты</p>
+                    </div>
+
+                    <form id="user-form" class="auth-form">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Пароль</label>
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Минимум 6 символов"
+                                autocomplete="new-password"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="role">Тип аккаунта</label>
+                            <select id="role">
+                                <option value="seller">Продавец</option>
+                                <option value="bidder">Участник</option>
+                            </select>
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" id="age-confirmed" required>
+                            <span>Мне 18 лет или больше</span>
+                        </label>
+
+                        <button type="submit" class="primary-action">
+                            Зарегистрироваться
+                        </button>
+                    </form>
+
+                    <div id="user-message" class="message"></div>
+
+                    <p class="auth-switch">
+                        Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
+                    </p>
+                </div>
+
+                <button id="logout-button" type="button" hidden>Выйти</button>
+            </div>
+        </div>
     </section>
-
 
     <!-- Управление продавца -->
     <section id="seller-section" hidden>

@@ -1,9 +1,43 @@
+
+function setAuthView(isAuthenticated) {
+    const userSection = document.getElementById('user-section');
+    const accountButton = document.getElementById('account-button');
+    const accountMenu = document.getElementById('account-menu');
+    const accountName = document.getElementById('account-name');
+    const accountEmail = document.getElementById('account-menu-email');
+    const accountRole = document.getElementById('account-menu-role');
+    const accountAvatar = document.getElementById('account-avatar');
+    const accountMenuAvatar = document.getElementById('account-menu-avatar');
+
+    if (userSection) {
+        userSection.classList.toggle('authenticated', isAuthenticated);
+    }
+
+    if (!isAuthenticated) {
+        if (accountButton) accountButton.hidden = true;
+        if (accountMenu) accountMenu.hidden = true;
+        if (accountName) accountName.textContent = '';
+        if (accountEmail) accountEmail.textContent = '';
+        if (accountRole) accountRole.textContent = '';
+        if (accountAvatar) accountAvatar.textContent = '';
+        if (accountMenuAvatar) accountMenuAvatar.textContent = '';
+    }
+}
+
 const api = {
     async request(method, path, body = null, userId = null) {
-        const headers = { 'Content-Type': 'application/json' };
+        const headers = {
+            'Content-Type': 'application/json'
+        };
 
         if (userId) {
             headers['X-User-Id'] = userId;
+        }
+
+        const token = localStorage.getItem('auctionhub_token');
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
         }
 
         const res = await fetch(path, {
@@ -43,6 +77,196 @@ function showMessage(el, text, isError) {
     setTimeout(() => {
         el.className = 'message';
     }, 5000);
+}
+
+
+// --- Вход ---
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const msgEl = document.getElementById('login-message');
+
+    const { ok, data } = await api.request('POST', '/api/auth/login', {
+        email,
+        password
+    });
+
+    if (!ok) {
+        showMessage(
+            msgEl,
+            data.message || 'Ошибка входа',
+            true
+        );
+        return;
+    }
+
+    localStorage.setItem('auctionhub_token', data.token);
+    currentUser = data.user;
+        setAuthView(true);
+
+    showMessage(
+        msgEl,
+        `Выполнен вход: ${data.user.email}`,
+        false
+    );
+
+    document.getElementById('user-info').textContent =
+        `${data.user.email} — роль: ${data.user.role} (id=${data.user.id})`;
+
+    document.getElementById('login-block').hidden = true;
+    document.getElementById('register-block').hidden = true;
+    document.getElementById('logout-button').hidden = false;
+
+    loadAuctions();
+    updateSellerInterface();
+    updateAccountUI();
+});
+
+
+// --- Восстановление сессии ---
+async function restoreSession() {
+    const token = localStorage.getItem('auctionhub_token');
+
+    if (!token) {
+        return;
+    }
+
+    const { ok, data } = await api.request('GET', '/api/auth/me');
+
+    if (!ok) {
+        localStorage.removeItem('auctionhub_token');
+        return;
+    }
+
+    currentUser = data;
+
+    document.getElementById('user-info').textContent =
+        `${data.email} — роль: ${data.role} (id=${data.id})`;
+
+    document.getElementById('login-block').hidden = true;
+    document.getElementById('register-block').hidden = true;
+    document.getElementById('logout-button').hidden = false;
+
+    loadAuctions();
+    updateSellerInterface();
+    updateAccountUI();
+}
+
+
+// --- Выход ---
+document.getElementById('logout-button').addEventListener('click', async () => {
+    const token = localStorage.getItem('auctionhub_token');
+
+    if (token) {
+        await api.request('POST', '/api/auth/logout');
+    }
+
+    localStorage.removeItem('auctionhub_token');
+    currentUser = null;
+    selectedAuctionId = null;
+
+    document.getElementById('user-info').textContent = 'Не авторизован';
+    document.getElementById('login-block').hidden = false;
+    document.getElementById('register-block').hidden = false;
+    document.getElementById('logout-button').hidden = true;
+
+    document.getElementById('seller-section').hidden = true;
+    document.getElementById('auction-management').hidden = true;
+});
+
+// --- UI аккаунта ---
+function updateAccountUI() {
+    const accountButton = document.getElementById('account-button');
+    const accountAvatar = document.getElementById('account-avatar');
+    const accountName = document.getElementById('account-name');
+    const menuAvatar = document.getElementById('account-menu-avatar');
+    const menuEmail = document.getElementById('account-menu-email');
+    const menuRole = document.getElementById('account-menu-role');
+    const loginBlock = document.getElementById('login-block');
+    const registerBlock = document.getElementById('register-block');
+
+    if (!accountButton) {
+        return;
+    }
+
+    if (!currentUser) {
+        accountButton.hidden = true;
+        loginBlock.hidden = false;
+        registerBlock.hidden = false;
+        return;
+    }
+
+    const initial = (currentUser.email || 'A').charAt(0).toUpperCase();
+
+    accountButton.hidden = false;
+    accountAvatar.textContent = initial;
+    menuAvatar.textContent = initial;
+    accountName.textContent = currentUser.email || 'Аккаунт';
+    menuEmail.textContent = currentUser.email || 'Пользователь';
+    menuRole.textContent =
+        currentUser.role === 'seller' ? 'Продавец' : 'Участник';
+
+    loginBlock.hidden = true;
+    registerBlock.hidden = true;
+}
+
+const accountButton = document.getElementById('account-button');
+const accountMenu = document.getElementById('account-menu');
+
+if (accountButton && accountMenu) {
+    accountButton.addEventListener('click', () => {
+        accountMenu.hidden = !accountMenu.hidden;
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.header-account')) {
+            accountMenu.hidden = true;
+        }
+    });
+}
+
+const showRegister = document.getElementById('show-register');
+const showLogin = document.getElementById('show-login');
+
+if (showRegister) {
+    showRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('login-block').hidden = true;
+        document.getElementById('register-block').hidden = false;
+    });
+}
+
+if (showLogin) {
+    showLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('register-block').hidden = true;
+        document.getElementById('login-block').hidden = false;
+    });
+}
+
+const accountLogout = document.getElementById('account-logout');
+
+if (accountLogout) {
+    accountLogout.addEventListener('click', async () => {
+        const token = localStorage.getItem('auctionhub_token');
+
+        if (token) {
+            await api.request('POST', '/api/auth/logout');
+        }
+
+        localStorage.removeItem('auctionhub_token');
+        currentUser = null;
+        selectedAuctionId = null;
+
+        document.getElementById('user-info').textContent = 'Не авторизован';
+        document.getElementById('account-menu').hidden = true;
+        document.getElementById('seller-section').hidden = true;
+        document.getElementById('auction-management').hidden = true;
+
+        updateAccountUI();
+    });
 }
 
 
@@ -689,4 +913,4 @@ async function loadBids(lotId) {
 
 // --- Стартовая загрузка ---
 
-loadAuctions();
+restoreSession();

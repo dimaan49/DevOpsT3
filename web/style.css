@@ -408,3 +408,506 @@ button:hover {
 #user-section { text-align: center; }
 #user-form { margin: 0 auto; text-align: left; }
 #user-info { margin: 0 auto 18px; }
+
+
+/* =========================================================
+   AuctionHub — marketplace redesign
+   ========================================================= */
+
+:root {
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-soft: #f8fafc;
+    --text: #172033;
+    --muted: #6b7280;
+    --border: #e6e9ef;
+    --accent: #3157d5;
+    --accent-hover: #2546b5;
+    --success: #16845b;
+    --danger: #c93636;
+    --shadow-sm: 0 2px 10px rgba(23, 32, 51, 0.06);
+    --shadow-md: 0 12px 35px rgba(23, 32, 51, 0.10);
+    --radius: 16px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.94);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+}
+
+.header-inner {
+    width: min(1180px, calc(100% - 40px));
+    min-height: 72px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 36px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-right: auto;
+}
+
+.brand-mark {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.brand h1 {
+    margin: 0;
+    font-size: 19px;
+    line-height: 1.1;
+}
+
+.brand span {
+    display: block;
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.main-nav a {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.main-nav a:hover {
+    color: var(--text);
+}
+
+.header-account {
+    position: relative;
+}
+
+.account-button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 10px 5px 5px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.account-avatar {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #e9edff;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.account-avatar.large {
+    width: 42px;
+    height: 42px;
+}
+
+.account-chevron {
+    color: var(--muted);
+    font-size: 16px;
+}
+
+.account-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 260px;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-md);
+}
+
+.account-menu-user {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8px;
+}
+
+.account-menu-user strong,
+.account-menu-user span {
+    display: block;
+}
+
+.account-menu-user strong {
+    max-width: 175px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.account-menu-user span {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.account-menu-divider {
+    height: 1px;
+    margin: 8px 0;
+    background: var(--border);
+}
+
+.account-menu button {
+    width: 100%;
+    padding: 10px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--danger);
+    text-align: left;
+    cursor: pointer;
+}
+
+.account-menu button:hover {
+    background: #fff1f1;
+}
+
+.auth-section {
+    max-width: 1180px;
+    margin: 48px auto;
+}
+
+.auth-layout {
+    min-height: 500px;
+    display: grid;
+    grid-template-columns: 1fr 430px;
+    align-items: center;
+    gap: 80px;
+}
+
+.auth-intro {
+    padding: 30px 0;
+}
+
+.eyebrow {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+}
+
+.auth-intro h2 {
+    margin: 16px 0;
+    font-size: clamp(36px, 5vw, 58px);
+    line-height: 1.03;
+    letter-spacing: -0.04em;
+}
+
+.auth-intro p {
+    max-width: 520px;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.auth-card {
+    padding: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow-md);
+}
+
+.auth-user-info {
+    display: none;
+}
+
+.auth-card-header {
+    margin-bottom: 24px;
+}
+
+.auth-card-header h3 {
+    margin: 0;
+    font-size: 25px;
+}
+
+.auth-card-header p {
+    margin: 7px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.form-group label {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    box-sizing: border-box;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-soft);
+    color: var(--text);
+    font: inherit;
+}
+
+.form-group input,
+.form-group select {
+    min-height: 46px;
+    padding: 0 13px;
+}
+
+.form-group textarea {
+    padding: 12px 13px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(49, 87, 213, 0.10);
+}
+
+.primary-action {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.primary-action:hover {
+    background: var(--accent-hover);
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.checkbox-row input {
+    width: 16px;
+    height: 16px;
+}
+
+.auth-switch {
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    text-align: center;
+}
+
+.auth-switch a {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+#logout-button {
+    display: none !important;
+}
+
+.section-header {
+    margin-bottom: 28px;
+}
+
+.section-header h2 {
+    font-size: 30px;
+    letter-spacing: -0.025em;
+}
+
+.section-header p,
+.section-description {
+    color: var(--muted);
+}
+
+.form-card,
+.seller-block {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.form-card {
+    padding: 28px;
+}
+
+.seller-block {
+    padding: 26px;
+    margin-top: 24px;
+}
+
+.form-card h3,
+.seller-block h3 {
+    margin-top: 0;
+}
+
+.auction-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+button {
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+}
+
+.message {
+    min-height: 20px;
+}
+
+@media (max-width: 850px) {
+    .header-inner {
+        width: min(100% - 24px, 1180px);
+        gap: 14px;
+    }
+
+    .main-nav {
+        display: none;
+    }
+
+    .auth-section {
+        margin: 24px auto;
+    }
+
+    .auth-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .auth-intro {
+        padding: 10px 0;
+        text-align: center;
+    }
+
+    .auth-intro p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .auth-card {
+        width: min(430px, calc(100% - 32px));
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 520px) {
+    .brand span,
+    .account-button #account-name {
+        display: none;
+    }
+
+    .header-inner {
+        min-height: 64px;
+    }
+
+    .auth-intro h2 {
+        font-size: 36px;
+    }
+
+    .auth-card {
+        padding: 22px;
+    }
+}
+
+
+/* Hide duplicate auth info inside the card */
+#user-info { display: none !important; }
+
+
+/* Authenticated landing state */
+.auth-section.authenticated .auth-layout {
+    display: block;
+}
+
+.auth-section.authenticated .auth-intro {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.auth-section.authenticated .auth-intro h2 {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-section.authenticated .auth-intro p {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.auth-section.authenticated .auth-card {
+    display: none !important;
+}
+
+/* Hide duplicate user information inside auth card */
+#user-info {
+    display: none !important;
+}
+
+/* Logged-out header state */
+.header-account:has(#account-button[hidden]) {
+    visibility: hidden;
+}
