@@ -1,0 +1,26 @@
+[Unit]
+Description=AuctionHub application server
+Documentation=https://github.com/dimaan49/DevOpsT3
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+User=appuser
+Group=appuser
+
+WorkingDirectory=/opt/auctionhub
+
+EnvironmentFile=/opt/auctionhub/.env
+
+ExecStart=/opt/auctionhub/build/auctionhub_server
+
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
