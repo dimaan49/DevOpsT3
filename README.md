@@ -44,7 +44,7 @@
 ## Требования
 
 - Arch Linux / CachyOS (или другая система с Qt6)
-- Пакеты: `base-devel`, `cmake`, `ninja`, `gcc`, `qt6-base`, `qt6-httpserver`, `postgresql-libs`
+- Пакеты: `base-devel`, `cmake`, `ninja`, `gcc`, `qt6-base`, `qt6-httpserver`, `postgresql-libs`, `qt6-websockets-dev`, `libqt6sql6-psql`
 
 ## Локальная проверка
 
