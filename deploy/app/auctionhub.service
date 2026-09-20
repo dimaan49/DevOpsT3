@@ -10,11 +10,11 @@ Type=simple
 User=appuser
 Group=appuser
 
-WorkingDirectory=/opt/auctionhub
+WorkingDirectory=/opt/auctionhub/app
 
-EnvironmentFile=/opt/auctionhub/.env
+EnvironmentFile=/opt/auctionhub/app/.env
 
-ExecStart=/opt/auctionhub/build/auctionhub_server
+ExecStart=/opt/auctionhub/app/build/auctionhub_server
 
 Restart=on-failure
 RestartSec=5

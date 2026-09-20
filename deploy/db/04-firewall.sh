@@ -1,5 +1,8 @@
 #!/bin/bash
 set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
+# Настройка UFW на сервере БД.
 
 echo "=== Installing UFW ==="
 
@@ -16,8 +19,8 @@ ufw default allow outgoing
 # SSH
 ufw allow 22/tcp
 
-# AuctionHub
-ufw allow 8080/tcp
+# PostgreSQL — только с app-сервера
+ufw allow from "${APP_IP}" to any port 5432 proto tcp
 
 echo "=== Enabling firewall ==="
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-APP_IP="172.20.10.3"
+# Настройка UFW на сервере приложения.
 
 echo "=== Installing UFW ==="
 
@@ -18,8 +18,8 @@ ufw default allow outgoing
 # SSH
 ufw allow 22/tcp
 
-# PostgreSQL - ONLY from application server
-ufw allow from "${APP_IP}" to any port 5432 proto tcp
+# AuctionHub HTTP API
+ufw allow 8080/tcp
 
 echo "=== Enabling firewall ==="
 
