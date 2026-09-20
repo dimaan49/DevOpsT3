@@ -45,7 +45,7 @@ qt_add_executable(auctionhub_server
     src/models/LotRepository.cpp
     src/models/Bid.h
     src/models/BidRepository.h
-    src/models/BItRepository.cpp
+    src/models/BidRepository.cpp
     src/server/ApiResponse.h
     src/handlers/UserHandler.h
     src/handlers/UserHandler.cpp
