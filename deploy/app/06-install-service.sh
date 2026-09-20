@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Установка systemd-службы AuctionHub.
 
-APP_DIR="/opt/auctionhub"
+APP_DIR="/opt/auctionhub/app"
 SERVICE_NAME="auctionhub"
 SERVICE_SRC="${APP_DIR}/deploy/app/auctionhub.service"
 SERVICE_DST="/etc/systemd/system/${SERVICE_NAME}.service"

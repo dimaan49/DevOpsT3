@@ -4,9 +4,12 @@ set -euo pipefail
 # Клонирование и сборка приложения.
 
 APP_USER="appuser"
-APP_DIR="/opt/auctionhub"
+APP_DIR="/opt/auctionhub/app"
 REPO_URL="https://github.com/dimaan49/DevOpsT3.git"
 REPO_BRANCH="feature/deploy-ext"
+
+mkdir -p "${APP_DIR}"
+chown "${APP_USER}:${APP_USER}" "${APP_DIR}"
 
 echo "=== Cloning repository ==="
 

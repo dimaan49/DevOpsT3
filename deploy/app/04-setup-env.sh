@@ -5,7 +5,7 @@ set -euo pipefail
 # JWT-секрет генерируется автоматически.
 
 APP_USER="appuser"
-APP_DIR="/opt/auctionhub"
+APP_DIR="/opt/auctionhub/app"
 ENV_FILE="${APP_DIR}/.env"
 ENV_EXAMPLE="${APP_DIR}/.env.example"
 

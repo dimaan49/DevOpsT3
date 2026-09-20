@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Применение схемы БД с app-сервера на db-сервер.
 
-APP_DIR="/opt/auctionhub"
+APP_DIR="/opt/auctionhub/app"
 ENV_FILE="${APP_DIR}/.env"
 
 if [ ! -f "${ENV_FILE}" ]; then
