@@ -1,13 +1,17 @@
 #!/bin/bash
+set -euo pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../deploy.conf"
+
 # Настройка статического IP на Host-only интерфейсе.
+#
 # Использование:
 #   sudo bash setup-network.sh --role app
 #   sudo bash setup-network.sh --role db
 #
-# --role app → 192.168.56.101
-# --role db  → 192.168.56.102
+# IP берётся из deploy.conf (APP_IP/DB_IP).
+# Если там пусто — спрашивается интерактивно.
 
 ROLE=""
 
@@ -38,11 +42,19 @@ case "${ROLE}" in
         ;;
 esac
 
+if [ -z "${STATIC_IP}" ]; then
+    read -r -p "Enter static IP for role '${ROLE}': " STATIC_IP
+
+    if [ -z "${STATIC_IP}" ]; then
+        echo "ERROR: static IP is required"
+        exit 1
+    fi
+fi
+
 PREFIX="24"
 
 echo "=== Detecting Host-only interface ==="
 
-# NAT — интерфейс с default route
 NAT_IFACE=$(ip -o route show default | awk '{print $5}' | head -1)
 
 if [ -z "${NAT_IFACE}" ]; then
@@ -52,7 +64,6 @@ fi
 
 echo "NAT interface: ${NAT_IFACE}"
 
-# Host-only — первый ethernet-интерфейс, кроме NAT
 HOSTONLY_IFACE=$(nmcli -t -f DEVICE,TYPE,STATE device status \
     | awk -F: '$2=="ethernet" && $3=="connected" {print $1}' \
     | grep -v "^${NAT_IFACE}$" \
@@ -65,7 +76,6 @@ fi
 
 echo "Host-only interface: ${HOSTONLY_IFACE}"
 
-# Имя NM-подключения, привязанного к этому интерфейсу
 CONN_NAME=$(nmcli -t -f NAME,DEVICE connection show --active \
     | awk -F: -v dev="${HOSTONLY_IFACE}" '$2==dev {print $1}' \
     | head -1)

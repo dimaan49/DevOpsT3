@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/../deploy.conf"
 # Настройка PostgreSQL: доступ только с app-сервера.
