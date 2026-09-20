@@ -1,28 +1,29 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Создание SQL-пользователя и БД.
 #
-# Пароль вводится интерактивно.
 
-DB_NAME="auctionhub"
-DB_USER="dbuser"
 
 echo "=== Creating database user and database ==="
 
-read -r -s -p "Enter PostgreSQL password for ${DB_USER}: " DB_PASSWORD
-echo
-read -r -s -p "Repeat password: " DB_PASSWORD_CONFIRM
-echo
-
 if [ -z "${DB_PASSWORD}" ]; then
-    echo "Password cannot be empty"
-    exit 1
-fi
+    read -r -s -p "Enter PostgreSQL password for ${DB_USER}: " DB_PASSWORD
+    echo
+    read -r -s -p "Repeat password: " DB_PASSWORD_CONFIRM
+    echo
 
-if [ "${DB_PASSWORD}" != "${DB_PASSWORD_CONFIRM}" ]; then
-    echo "Passwords do not match"
-    exit 1
+    if [ -z "${DB_PASSWORD}" ]; then
+        echo "Password cannot be empty"
+        exit 1
+    fi
+
+    if [ "${DB_PASSWORD}" != "${DB_PASSWORD_CONFIRM}" ]; then
+        echo "Passwords do not match"
+        exit 1
+    fi
+else
+    echo "Using password from deploy.conf / environment"
 fi
 
 sudo -u postgres psql <<EOF

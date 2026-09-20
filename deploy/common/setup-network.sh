@@ -1,6 +1,6 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Настройка статического IP на Host-only интерфейсе.
 # Использование:
 #   sudo bash setup-network.sh --role app
@@ -30,8 +30,8 @@ if [ -z "${ROLE}" ]; then
 fi
 
 case "${ROLE}" in
-    app) STATIC_IP="192.168.56.101" ;;
-    db)  STATIC_IP="192.168.56.102" ;;
+    app) STATIC_IP="${APP_IP}" ;;
+    db)  STATIC_IP="${DB_IP}" ;;
     *)
         echo "Invalid role: ${ROLE}. Use 'app' or 'db'."
         exit 1

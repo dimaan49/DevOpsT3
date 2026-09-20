@@ -1,6 +1,6 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Настройка SSH:
 #   - создание администратора admin (в группе sudo)
 #   - копирование SSH-ключа root в admin
@@ -8,7 +8,6 @@ set -euo pipefail
 #   - запрет входа по паролю
 #   - вход только по ключам
 
-ADMIN_USER="admin"
 ADMIN_HOME="/home/${ADMIN_USER}"
 
 echo "=== Creating admin user ==="

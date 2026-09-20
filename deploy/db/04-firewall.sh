@@ -1,9 +1,7 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Настройка UFW на сервере БД.
-
-APP_IP="192.168.56.101"
 
 echo "=== Installing UFW ==="
 

@@ -1,12 +1,7 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Клонирование и сборка приложения.
-
-APP_USER="appuser"
-APP_DIR="/opt/auctionhub/app"
-REPO_URL="https://github.com/dimaan49/DevOpsT3.git"
-REPO_BRANCH="feature/deploy-ext"
 
 mkdir -p "${APP_DIR}"
 chown "${APP_USER}:${APP_USER}" "${APP_DIR}"

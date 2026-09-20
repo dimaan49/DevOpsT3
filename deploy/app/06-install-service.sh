@@ -1,9 +1,8 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Установка systemd-службы AuctionHub.
 
-APP_DIR="/opt/auctionhub/app"
 SERVICE_NAME="auctionhub"
 SERVICE_SRC="${APP_DIR}/deploy/app/auctionhub.service"
 SERVICE_DST="/etc/systemd/system/${SERVICE_NAME}.service"

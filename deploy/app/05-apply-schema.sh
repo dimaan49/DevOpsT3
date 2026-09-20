@@ -1,9 +1,8 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Применение схемы БД с app-сервера на db-сервер.
 
-APP_DIR="/opt/auctionhub/app"
 ENV_FILE="${APP_DIR}/.env"
 
 if [ ! -f "${ENV_FILE}" ]; then

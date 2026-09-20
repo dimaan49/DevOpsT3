@@ -1,12 +1,9 @@
 #!/bin/bash
-set -euo pipefail
-
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../deploy.conf"
 # Настройка PostgreSQL: доступ только с app-сервера.
 
-DB_NAME="auctionhub"
-DB_USER="dbuser"
-APP_IP="192.168.56.101"
-DB_IP="192.168.56.102"
+
 
 echo "=== Detecting PostgreSQL config directory ==="
 
