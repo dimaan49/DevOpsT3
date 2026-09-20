@@ -38,7 +38,7 @@ run_scripts() {
     for script in ${scripts}; do
         echo
         echo "=== Running ${script} ==="
-        bash "${script}"
+        bash "${script}" "$@"
     done
 }
 
@@ -47,11 +47,11 @@ case "${1:-}" in
         run_scripts common
         ;;
     --db)
-        run_scripts common
+        run_scripts common --role db
         run_scripts db
         ;;
     --app)
-        run_scripts common
+        run_scripts common --role app
         run_scripts app
         ;;
     *)
@@ -62,3 +62,4 @@ esac
 
 echo
 echo "=== Done ==="
+
