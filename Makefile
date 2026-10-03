@@ -9,14 +9,13 @@ export
 # --- Обязательные команды локальной проверки ---
 # setup     — первоначальная настройка
 # run       — локальный запуск
-# test      — автотесты                     (пункт 4)
 # quality   — форматирование и анализ        (пункт 7)
 # migrate   — миграции БД                    (пункт 8)
 # backup    — резервная копия БД             (пункт 11)
 # restore   — восстановление из копии        (пункт 11)
 # verify    — полный набор проверок          (пункт 13)
 
-.PHONY: setup deps env configure build run clean
+.PHONY: setup deps env configure build run test clean
 
 # --- Первоначальная настройка ---
 setup: deps env build
@@ -49,3 +48,8 @@ run: build
 # --- Очистка ---
 clean:
 	rm -rf $(BUILD_DIR)
+
+
+test: build
+	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
+	cd $(BUILD_DIR) && ctest --output-on-failure
