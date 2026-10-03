@@ -56,11 +56,9 @@ test:
 	    ctest --output-on-failure
 
 test-unit:
-	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
-	cd $(BUILD_DIR) && ctest --output-on-failure -L "smoke|jwt|password"
+	cd $(BUILD_DIR) && ./tests/auctionhub_tests "[smoke],[jwt],[password]"
 
 test-db:
-	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
 	cd $(BUILD_DIR) && \
 	    AUCTIONHUB_DB_PASSWORD="$(AUCTIONHUB_TEST_DB_PASSWORD)" \
-	    ctest --output-on-failure -L "db"
+	    ./tests/auctionhub_tests "[db]"
