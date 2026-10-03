@@ -20,12 +20,20 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # --- Qt6 ---
-find_package(Qt6 REQUIRED COMPONENTS
+find_package(Qt6 6.5 REQUIRED COMPONENTS
     Core
     Network
     Sql
     HttpServer
 )
+include(FetchContent)
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.5.2
+)
+
+FetchContent_MakeAvailable(Catch2)
 
 qt_standard_project_setup()
 
