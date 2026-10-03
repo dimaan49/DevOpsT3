@@ -1,19 +1,18 @@
 #include "Database.h"
 
+#include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QDebug>
 
 namespace auctionhub::db {
 
-bool Database::connect()
-{
-    const QString host     = qEnvironmentVariable("AUCTIONHUB_DB_HOST", "localhost");
-    const int     port     = qEnvironmentVariableIntValue("AUCTIONHUB_DB_PORT") > 0
-                                 ? qEnvironmentVariableIntValue("AUCTIONHUB_DB_PORT")
-                                 : 5432;
-    const QString dbName   = qEnvironmentVariable("AUCTIONHUB_DB_NAME", "auctionhub");
-    const QString user     = qEnvironmentVariable("AUCTIONHUB_DB_USER", "auctionhub");
+bool Database::connect() {
+    const QString host = qEnvironmentVariable("AUCTIONHUB_DB_HOST", "localhost");
+    const int port = qEnvironmentVariableIntValue("AUCTIONHUB_DB_PORT") > 0
+                         ? qEnvironmentVariableIntValue("AUCTIONHUB_DB_PORT")
+                         : 5432;
+    const QString dbName = qEnvironmentVariable("AUCTIONHUB_DB_NAME", "auctionhub");
+    const QString user = qEnvironmentVariable("AUCTIONHUB_DB_USER", "auctionhub");
     const QString password = qEnvironmentVariable("AUCTIONHUB_DB_PASSWORD");
 
     if (password.isEmpty()) {
@@ -37,16 +36,14 @@ bool Database::connect()
     return true;
 }
 
-void Database::close()
-{
+void Database::close() {
     if (QSqlDatabase::contains(kConnectionName)) {
         QSqlDatabase::database(kConnectionName).close();
         QSqlDatabase::removeDatabase(kConnectionName);
     }
 }
 
-bool Database::isHealthy()
-{
+bool Database::isHealthy() {
     if (!QSqlDatabase::contains(kConnectionName)) {
         return false;
     }
@@ -63,9 +60,8 @@ bool Database::isHealthy()
     return query.next();
 }
 
-QSqlDatabase Database::handle()
-{
+QSqlDatabase Database::handle() {
     return QSqlDatabase::database(kConnectionName);
 }
 
-} // namespace auctionhub::db
+}  // namespace auctionhub::db

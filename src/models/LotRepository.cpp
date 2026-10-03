@@ -2,34 +2,30 @@
 
 #include "../db/Database.h"
 
+#include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
-#include <QDebug>
 
 namespace auctionhub::models {
 
 namespace {
 
-Lot rowToLot(const QSqlQuery &q)
-{
+Lot rowToLot(const QSqlQuery& q) {
     Lot l;
-    l.id          = q.value("id").toLongLong();
-    l.auctionId   = q.value("auction_id").toLongLong();
-    l.title       = q.value("title").toString();
+    l.id = q.value("id").toLongLong();
+    l.auctionId = q.value("auction_id").toLongLong();
+    l.title = q.value("title").toString();
     l.description = q.value("description").toString();
-    l.startPrice  = q.value("start_price").toDouble();
-    l.createdAt   = q.value("created_at").toDateTime();
+    l.startPrice = q.value("start_price").toDouble();
+    l.createdAt = q.value("created_at").toDateTime();
     return l;
 }
 
-} // namespace
+}  // namespace
 
-qint64 LotRepository::create(qint64 auctionId,
-                             const QString &title,
-                             const QString &description,
-                             double startPrice)
-{
+qint64 LotRepository::create(qint64 auctionId, const QString& title, const QString& description,
+                             double startPrice) {
     if (startPrice <= 0.0) {
         return -1;
     }
@@ -40,10 +36,10 @@ qint64 LotRepository::create(qint64 auctionId,
         VALUES (:auction_id, :title, :description, :start_price)
         RETURNING id
     )");
-    q.bindValue(":auction_id",   auctionId);
-    q.bindValue(":title",        title);
-    q.bindValue(":description",  description);
-    q.bindValue(":start_price",  startPrice);
+    q.bindValue(":auction_id", auctionId);
+    q.bindValue(":title", title);
+    q.bindValue(":description", description);
+    q.bindValue(":start_price", startPrice);
 
     if (!q.exec()) {
         qCritical() << "LotRepository::create failed:" << q.lastError().text();
@@ -55,8 +51,7 @@ qint64 LotRepository::create(qint64 auctionId,
     return q.value(0).toLongLong();
 }
 
-std::optional<Lot> LotRepository::findById(qint64 id)
-{
+std::optional<Lot> LotRepository::findById(qint64 id) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM lots WHERE id = :id LIMIT 1");
     q.bindValue(":id", id);
@@ -71,8 +66,7 @@ std::optional<Lot> LotRepository::findById(qint64 id)
     return rowToLot(q);
 }
 
-std::vector<Lot> LotRepository::findByAuction(qint64 auctionId)
-{
+std::vector<Lot> LotRepository::findByAuction(qint64 auctionId) {
     std::vector<Lot> result;
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM lots WHERE auction_id = :aid ORDER BY created_at DESC");
@@ -88,4 +82,4 @@ std::vector<Lot> LotRepository::findByAuction(qint64 auctionId)
     return result;
 }
 
-} // namespace auctionhub::models
+}  // namespace auctionhub::models

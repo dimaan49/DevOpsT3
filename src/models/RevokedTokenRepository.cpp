@@ -2,15 +2,14 @@
 
 #include "../db/Database.h"
 
+#include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
-#include <QDebug>
 
 namespace auctionhub::models {
 
-bool RevokedTokenRepository::revoke(const QString &token)
-{
+bool RevokedTokenRepository::revoke(const QString& token) {
     QSqlQuery q(db::Database::handle());
     q.prepare(R"(
         INSERT INTO revoked_tokens (token)
@@ -20,25 +19,22 @@ bool RevokedTokenRepository::revoke(const QString &token)
     q.bindValue(":token", token);
 
     if (!q.exec()) {
-        qCritical() << "RevokedTokenRepository::revoke failed:"
-                    << q.lastError().text();
+        qCritical() << "RevokedTokenRepository::revoke failed:" << q.lastError().text();
         return false;
     }
     return true;
 }
 
-bool RevokedTokenRepository::isRevoked(const QString &token)
-{
+bool RevokedTokenRepository::isRevoked(const QString& token) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT 1 FROM revoked_tokens WHERE token = :token LIMIT 1");
     q.bindValue(":token", token);
 
     if (!q.exec()) {
-        qCritical() << "RevokedTokenRepository::isRevoked failed:"
-                    << q.lastError().text();
+        qCritical() << "RevokedTokenRepository::isRevoked failed:" << q.lastError().text();
         return false;
     }
     return q.next();
 }
 
-} // namespace auctionhub::models
+}  // namespace auctionhub::models

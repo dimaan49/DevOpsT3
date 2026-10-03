@@ -8,10 +8,10 @@
 namespace auctionhub::server {
 
 // Извлекает токен из заголовка Authorization: Bearer <token>.
-QString extractToken(const QHttpServerRequest &req);
+QString extractToken(const QHttpServerRequest& req);
 
 // Проверяет токен и возвращает пользователя.
 // nullopt, если токен невалиден, истёк, отозван, или пользователь не найден.
-std::optional<models::User> authenticate(const QHttpServerRequest &req);
+std::optional<models::User> authenticate(const QHttpServerRequest& req);
 
-} // namespace auctionhub::server
+}  // namespace auctionhub::server

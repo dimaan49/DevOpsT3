@@ -9,9 +9,7 @@ namespace auctionhub::models {
 
 class LotRepository {
 public:
-    static qint64 create(qint64 auctionId,
-                         const QString &title,
-                         const QString &description,
+    static qint64 create(qint64 auctionId, const QString& title, const QString& description,
                          double startPrice);
 
     static std::optional<Lot> findById(qint64 id);
@@ -19,4 +17,4 @@ public:
     static std::vector<Lot> findByAuction(qint64 auctionId);
 };
 
-} // namespace auctionhub::models
+}  // namespace auctionhub::models

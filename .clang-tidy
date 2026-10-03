@@ -1,0 +1,38 @@
+# Отключённые проверки и причины:
+#
+# misc-*                                  — Qt использует транзитивные include,
+#                                           misc-include-cleaner ломается
+# cppcoreguidelines-*                     — рассчитаны на «чистый» C++ без Qt,
+#                                           ругаются на obj["key"] в QJsonObject
+# portability-avoid-pragma-once           — #pragma once стандарт в C++
+# readability-*                            — стилистика, за неё отвечает clang-format
+# modernize-*                              — стилистика
+# bugprone-easily-swappable-parameters    — ложные срабатывания на QString
+# performance-enum-size                   — не критично
+#
+# Включённые проверки:
+#   bugprone-*     — подозрительные места
+#   cert-*         — правила безопасности
+#   clang-analyzer-*  — глубокий анализ (утечки, разыменования)
+#   performance-*  — производительность
+
+Checks: >
+    bugprone-*,
+    cert-*,
+    clang-analyzer-*,
+    performance-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-narrowing-conversions,
+    -bugprone-implicit-widening-of-multiplication-result,
+    -bugprone-branch-clone,
+    -bugprone-macro-parentheses,
+    -cert-err58-cpp,
+    -performance-no-automatic-move,
+    -performance-enum-size
+
+WarningsAsErrors: ''
+
+# Анализировать только заголовки из src/
+HeaderFilterRegex: 'src/.*'
+
+FormatStyle: file

@@ -1,23 +1,22 @@
 #include "BidHandler.h"
 
-#include "../server/ApiResponse.h"
 #include "../models/BidRepository.h"
 #include "../models/LotRepository.h"
 #include "../models/UserRepository.h"
+#include "../server/ApiResponse.h"
 #include "../server/auth.h"
 
 #include <QHttpServerRequest>
 #include <QJsonArray>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonParseError>
 
 namespace auctionhub::handlers {
 
 namespace {
 
-QJsonObject parseJsonBody(const QByteArray &body, QString &errorMessage)
-{
+QJsonObject parseJsonBody(const QByteArray& body, QString& errorMessage) {
     QJsonParseError err;
     const QJsonDocument doc = QJsonDocument::fromJson(body, &err);
     if (err.error != QJsonParseError::NoError) {
@@ -31,20 +30,18 @@ QJsonObject parseJsonBody(const QByteArray &body, QString &errorMessage)
     return doc.object();
 }
 
-QJsonObject bidToJson(const models::Bid &b)
-{
+QJsonObject bidToJson(const models::Bid& b) {
     QJsonObject obj;
-    obj["id"]         = b.id;
-    obj["lot_id"]     = b.lotId;
-    obj["bidder_id"]  = b.bidderId;
-    obj["amount"]     = b.amount;
+    obj["id"] = b.id;
+    obj["lot_id"] = b.lotId;
+    obj["bidder_id"] = b.bidderId;
+    obj["amount"] = b.amount;
     obj["created_at"] = b.createdAt.toString(Qt::ISODate);
     return obj;
 }
 
 // Переводит результат валидации в HTTP-ответ с осмысленным сообщением.
-QHttpServerResponse validationToResponse(models::BidValidationResult result)
-{
+QHttpServerResponse validationToResponse(models::BidValidationResult result) {
     switch (result) {
     case models::BidValidationResult::Ok:
         return QHttpServerResponse(QHttpServerResponse::StatusCode::Ok);
@@ -60,26 +57,22 @@ QHttpServerResponse validationToResponse(models::BidValidationResult result)
     return api::serverError("Unknown validation result");
 }
 
-} // namespace
+}  // namespace
 
-void BidHandler::registerRoutes(QHttpServer &server)
-{
+void BidHandler::registerRoutes(QHttpServer& server) {
     // POST /api/lots/{id}/bids — подать ставку
-    server.route("/api/lots/<arg>/bids",
-                 QHttpServerRequest::Method::Post,
-                 [](qint64 lotId, const QHttpServerRequest &req) -> QHttpServerResponse {
+    server.route("/api/lots/<arg>/bids", QHttpServerRequest::Method::Post,
+                 [](qint64 lotId, const QHttpServerRequest& req) -> QHttpServerResponse {
+                     const auto user = server::authenticate(req);
+                     if (!user.has_value()) {
+                         return api::unauthorized("Invalid or expired token");
+                     }
+                     const qint64 userId = user->id;
 
-					const auto user = server::authenticate(req);
-					if (!user.has_value()) {
-						return api::unauthorized("Invalid or expired token");
-					}
-					const qint64 userId = user->id;
-
-					if (user->role != "bidder" && user->role != "seller") {
-						return api::forbidden("Only bidders can place bids");
-					}
-					const qint64 bidderId = user->id;
-
+                     if (user->role != "bidder" && user->role != "seller") {
+                         return api::forbidden("Only bidders can place bids");
+                     }
+                     const qint64 bidderId = user->id;
 
                      QString parseError;
                      const QJsonObject body = parseJsonBody(req.body(), parseError);
@@ -108,7 +101,7 @@ void BidHandler::registerRoutes(QHttpServer &server)
 
                      // Возвращаем созданную ставку.
                      const auto bids = models::BidRepository::findByLot(lotId);
-                     for (const auto &b : bids) {
+                     for (const auto& b : bids) {
                          if (b.id == bidId) {
                              return api::created(bidToJson(b));
                          }
@@ -117,10 +110,8 @@ void BidHandler::registerRoutes(QHttpServer &server)
                  });
 
     // GET /api/lots/{id}/bids — история ставок по лоту
-    server.route("/api/lots/<arg>/bids",
-                 QHttpServerRequest::Method::Get,
+    server.route("/api/lots/<arg>/bids", QHttpServerRequest::Method::Get,
                  [](qint64 lotId) -> QHttpServerResponse {
-
                      const auto lot = models::LotRepository::findById(lotId);
                      if (!lot.has_value()) {
                          return api::notFound(QString("Lot %1 not found").arg(lotId));
@@ -128,17 +119,17 @@ void BidHandler::registerRoutes(QHttpServer &server)
 
                      const auto bids = models::BidRepository::findByLot(lotId);
                      QJsonArray arr;
-                     for (const auto &b : bids) {
+                     for (const auto& b : bids) {
                          arr.append(bidToJson(b));
                      }
 
                      QJsonObject result;
-                     result["lot_id"]       = lotId;
+                     result["lot_id"] = lotId;
                      result["current_price"] = models::BidRepository::currentPrice(lotId);
-                     result["items"]        = arr;
-                     result["count"]        = static_cast<int>(bids.size());
+                     result["items"] = arr;
+                     result["count"] = static_cast<int>(bids.size());
                      return api::ok(result);
                  });
 }
 
-} // namespace auctionhub::handlers
+}  // namespace auctionhub::handlers
