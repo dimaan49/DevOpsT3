@@ -95,3 +95,78 @@ TEST_CASE("BidRepository: place bid and check current price", "[db][bid]")
     // 1100 — не выше текущей
     REQUIRE(models::BidRepository::validate(f.lotId, 1100.0) == BidValidationResult::TooLow);
 }
+TEST_CASE("BidRepository: boundary — exactly current + step", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    // current = 1000, step = 100. Ровно 1100 — принимается.
+    REQUIRE(models::BidRepository::validate(f.lotId, 1100.0) == BidValidationResult::Ok);
+}
+
+TEST_CASE("BidRepository: boundary — current + step - 1", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    // 1099 = 1000 + 99, не кратно шагу
+    REQUIRE(models::BidRepository::validate(f.lotId, 1099.0) == BidValidationResult::NotMultipleOfStep);
+}
+
+TEST_CASE("BidRepository: boundary — current - 1", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    // 999 < 1000
+    REQUIRE(models::BidRepository::validate(f.lotId, 999.0) == BidValidationResult::TooLow);
+}
+
+TEST_CASE("BidRepository: zero amount is too low", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    REQUIRE(models::BidRepository::validate(f.lotId, 0.0) == BidValidationResult::TooLow);
+}
+
+TEST_CASE("BidRepository: negative amount is too low", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    REQUIRE(models::BidRepository::validate(f.lotId, -100.0) == BidValidationResult::TooLow);
+}
+
+TEST_CASE("BidRepository: large multiple of step is ok", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    // 1000 + 1000*10 = 11000, разница 10000 кратна 100
+    REQUIRE(models::BidRepository::validate(f.lotId, 11000.0) == BidValidationResult::Ok);
+}
+
+TEST_CASE("BidRepository: place with zero amount returns -1", "[db][bid][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    // place проверяет validate внутри, возвращает -1 при невалидной ставке
+    REQUIRE(models::BidRepository::place(f.lotId, f.bidderId, 0.0) == -1);
+}
+
+TEST_CASE("BidRepository: multiple bids increment current price", "[db][bid]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+    Fixture f;
+
+    REQUIRE(models::BidRepository::place(f.lotId, f.bidderId, 1100.0) > 0);
+    REQUIRE(models::BidRepository::currentPrice(f.lotId) == 1100.0);
+
+    REQUIRE(models::BidRepository::place(f.lotId, f.bidderId, 1200.0) > 0);
+    REQUIRE(models::BidRepository::currentPrice(f.lotId) == 1200.0);
+
+    REQUIRE(models::BidRepository::place(f.lotId, f.bidderId, 1300.0) > 0);
+    REQUIRE(models::BidRepository::currentPrice(f.lotId) == 1300.0);
+}

@@ -74,3 +74,61 @@ TEST_CASE("UserRepository: emailExists", "[db][user]")
     models::UserRepository::create(email, "hash", "seller", true);
     REQUIRE(models::UserRepository::emailExists(email));
 }
+
+TEST_CASE("UserRepository: create with empty email", "[db][user][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+    const qint64 id = models::UserRepository::create("", hash, "seller", true);
+
+    // Пустой email сохраняется на уровне репозитория.
+    // Проверка формата — в UserHandler, не здесь.
+    // Тест показывает текущее поведение.
+    REQUIRE(id > 0);
+    REQUIRE(models::UserRepository::emailExists(""));
+}
+
+TEST_CASE("UserRepository: create with empty role fails on CHECK", "[db][user][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+
+    // CHECK (role IN ('seller','bidder','moderator')) не пропустит пустую роль
+    const qint64 id = models::UserRepository::create("role@test.local", hash, "", true);
+    REQUIRE(id == -1);
+}
+
+TEST_CASE("UserRepository: create with invalid role fails on CHECK", "[db][user][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+
+    const qint64 id = models::UserRepository::create("bad@test.local", hash, "admin", true);
+    REQUIRE(id == -1);
+}
+
+TEST_CASE("UserRepository: all three valid roles accepted", "[db][user]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+
+    REQUIRE(models::UserRepository::create("s@test.local", hash, "seller", true) > 0);
+    REQUIRE(models::UserRepository::create("b@test.local", hash, "bidder", true) > 0);
+    REQUIRE(models::UserRepository::create("m@test.local", hash, "moderator", true) > 0);
+}
+
+TEST_CASE("UserRepository: email case-sensitive uniqueness", "[db][user][boundary]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+
+    // В БД UNIQUE на email без case-insensitive. Проверяем фактическое поведение.
+    REQUIRE(models::UserRepository::create("Case@Test.local", hash, "seller", true) > 0);
+    REQUIRE(models::UserRepository::create("case@test.local", hash, "seller", true) > 0);
+    // Оба создаются — регистр учитывается
+}
