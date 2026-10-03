@@ -49,7 +49,18 @@ run: build
 clean:
 	rm -rf $(BUILD_DIR)
 
-
-test: build
+test:
 	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
-	cd $(BUILD_DIR) && ctest --output-on-failure
+	cd $(BUILD_DIR) && \
+	    AUCTIONHUB_DB_PASSWORD="$(AUCTIONHUB_TEST_DB_PASSWORD)" \
+	    ctest --output-on-failure
+
+test-unit:
+	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
+	cd $(BUILD_DIR) && ctest --output-on-failure -L "smoke|jwt|password"
+
+test-db:
+	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
+	cd $(BUILD_DIR) && \
+	    AUCTIONHUB_DB_PASSWORD="$(AUCTIONHUB_TEST_DB_PASSWORD)" \
+	    ctest --output-on-failure -L "db"

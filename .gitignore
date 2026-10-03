@@ -59,3 +59,4 @@ Makefile.Release
 
 paper/
 .env
+.env.test
