@@ -60,3 +60,13 @@ Makefile.Release
 paper/
 .env
 .env.test
+
+
+# --- Отчёты проверок ---
+*.gcda
+*.gcno
+*.gcov
+coverage.html
+coverage-summary.txt
+clang-tidy-report.txt
+test-report.xml

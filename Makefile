@@ -68,7 +68,10 @@ test:
 	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
 	cd $(BUILD_DIR) && \
 	    AUCTIONHUB_DB_PASSWORD="$(AUCTIONHUB_TEST_DB_PASSWORD)" \
-	    ctest --output-on-failure
+	    ctest --output-on-failure \
+	          --output-junit test-report.xml
+	@echo
+	@echo "Report saved: $(BUILD_DIR)/test-report.xml"
 
 test-unit:
 	$(CMAKE) --build $(BUILD_DIR) --target auctionhub_tests
@@ -90,13 +93,16 @@ quality: build
 	@echo "=== clang-format check ==="
 	$(CLANG_FORMAT) --dry-run --Werror $(SRC_FILES)
 	@echo
-	@echo "=== clang-tidy ==="
-	$(CLANG_TIDY) -p $(BUILD_DIR) $(SRC_FILES) --quiet
+	@echo "=== clang-tidy (SAST) ==="
+	@set -o pipefail; \
+	$(CLANG_TIDY) -p $(BUILD_DIR) $(SRC_FILES) --quiet 2>&1 \
+	    | tee $(BUILD_DIR)/clang-tidy-report.txt
 	@echo
+	@echo "Report saved: $(BUILD_DIR)/clang-tidy-report.txt"
 	@echo "=== Quality checks passed ==="
-
 # --- Покрытие ---
 coverage:
+	rm -rf $(BUILD_COVERAGE_DIR)
 	$(CMAKE) -B $(BUILD_COVERAGE_DIR) -G $(GENERATOR) \
 	    -DCMAKE_BUILD_TYPE=Debug \
 	    -DCMAKE_CXX_COMPILER=$(CXX) \
@@ -105,14 +111,19 @@ coverage:
 	cd $(BUILD_COVERAGE_DIR) && \
 	    AUCTIONHUB_DB_PASSWORD="$(AUCTIONHUB_TEST_DB_PASSWORD)" \
 	    ctest --output-on-failure
+	@echo
+	@echo "=== Coverage summary ==="
 	cd $(BUILD_COVERAGE_DIR) && \
 	    $(GCOVR) \
 	        --root .. \
 	        --filter '../src/.*' \
 	        --exclude '../src/main.cpp' \
+	        --exclude '.*_deps.*' \
 	        --gcov-executable "llvm-cov gcov" \
+	        --gcov-ignore-errors=source_not_found \
+	        --gcov-ignore-errors=no_working_dir_found \
 	        --html-details coverage.html \
-	        --print-summary
+	        --print-summary | tee coverage-summary.txt
 
 clean-coverage:
 	rm -rf $(BUILD_COVERAGE_DIR)
