@@ -132,3 +132,11 @@ clean-coverage:
 verify: quality test
 	@echo
 	@echo "=== All verification checks passed ==="
+
+
+# --- Миграции ---
+migrate:
+	bash scripts/migrate.sh auctionhub
+
+migrate-test:
+	bash scripts/migrate.sh auctionhub_test
