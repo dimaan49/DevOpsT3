@@ -5,6 +5,7 @@ add_executable(auctionhub_tests
     test_user_repository.cpp
     test_auction_repository.cpp
     test_bid_repository.cpp
+	test_review_repository.cpp
 )
 
 target_link_libraries(auctionhub_tests PRIVATE
