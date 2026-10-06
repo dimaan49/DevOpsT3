@@ -7,12 +7,14 @@ add_library(auctionhub_core STATIC
     models/LotRepository.cpp
     models/BidRepository.cpp
     models/RevokedTokenRepository.cpp
+	models/ReviewRepository.cpp
     server/jwt.cpp
     server/auth.cpp
     handlers/UserHandler.cpp
     handlers/AuctionHandler.cpp
     handlers/BidHandler.cpp
     handlers/AuthHandler.cpp
+	handlers/ReviewHandler.cpp
 )
 
 target_include_directories(auctionhub_core PUBLIC

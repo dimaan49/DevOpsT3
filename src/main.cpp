@@ -3,6 +3,7 @@
 #include "handlers/AuthHandler.h"
 #include "handlers/BidHandler.h"
 #include "handlers/UserHandler.h"
+#include "handlers/ReviewHandler.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -68,6 +69,8 @@ int main(int argc, char* argv[]) {
     auctionhub::handlers::AuctionHandler::registerRoutes(httpServer);
     auctionhub::handlers::BidHandler::registerRoutes(httpServer);
     auctionhub::handlers::AuthHandler::registerRoutes(httpServer);
+    auctionhub::handlers::ReviewHandler::registerRoutes(httpServer);
+
 
     httpServer.route("/health", []() {
         QJsonObject obj;

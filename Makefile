@@ -28,7 +28,8 @@ export
         test test-unit test-db \
         format-fix quality \
         coverage clean-coverage \
-        verify
+        verify \
+		backup restore
 
 # --- Первоначальная настройка ---
 setup: deps env build
@@ -140,3 +141,14 @@ migrate:
 
 migrate-test:
 	bash scripts/migrate.sh auctionhub_test
+
+
+backup:
+	bash scripts/backup.sh auctionhub
+
+restore:
+	@if [ -z "$(FILE)" ]; then \
+		echo "Usage: make restore FILE=backups/auctionhub_YYYYMMDD_HHMMSS.sql"; \
+		exit 1; \
+	fi
+	bash scripts/restore.sh "$(FILE)" auctionhub

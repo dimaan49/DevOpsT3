@@ -70,3 +70,8 @@ coverage.html
 coverage-summary.txt
 clang-tidy-report.txt
 test-report.xml
+
+
+#backups
+backups/
+*sql.gz
