@@ -29,7 +29,8 @@ export
         format-fix quality \
         coverage clean-coverage \
         verify \
-		backup restore
+		backup restore \
+		test-migrations test-backup-restore
 
 # --- Первоначальная настройка ---
 setup: deps env build
@@ -130,7 +131,7 @@ clean-coverage:
 	rm -rf $(BUILD_COVERAGE_DIR)
 
 # --- Полная проверка ---
-verify: quality test
+verify: quality test test-migrations test-backup-restoret
 	@echo
 	@echo "=== All verification checks passed ==="
 
@@ -142,6 +143,8 @@ migrate:
 migrate-test:
 	bash scripts/migrate.sh auctionhub_test
 
+test-migrations:
+	bash scripts/test-migrations.sh
 
 backup:
 	bash scripts/backup.sh auctionhub
@@ -152,3 +155,6 @@ restore:
 		exit 1; \
 	fi
 	bash scripts/restore.sh "$(FILE)" auctionhub
+	
+test-backup-restore:
+	bash scripts/test-backup-restore.sh
