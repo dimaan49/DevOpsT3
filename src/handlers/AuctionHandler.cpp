@@ -243,6 +243,33 @@ void AuctionHandler::registerRoutes(QHttpServer& server) {
                          return api::serverError("Failed to cancel auction");
                      }
                  });
+    // DELETE /api/auctions/{id} — удалить аукцион
+    server.route("/api/auctions/<arg>", QHttpServerRequest::Method::Delete,
+                 [](qint64 id, const QHttpServerRequest& req) -> QHttpServerResponse {
+                     const auto user = server::authenticate(req);
+                     if (!user.has_value()) {
+                         return api::unauthorized("Invalid or expired token");
+                     }
+                     const qint64 userId = user->id;
+
+                     const auto auction = models::AuctionRepository::findById(id);
+                     if (!auction.has_value()) {
+                         return api::notFound(QString("Auction %1 not found").arg(id));
+                     }
+                     if (auction->sellerId != userId) {
+                         return api::forbidden("Only the seller can delete this auction");
+                     }
+
+                     if (!models::AuctionRepository::remove(id, userId)) {
+                         return api::conflict(
+                             "Cannot delete auction: it has bids or deletion failed");
+                     }
+
+                     QJsonObject response;
+                     response["status"] = "ok";
+                     response["id"]     = id;
+                     return api::ok(response);
+                 });
 }
 
 }  // namespace auctionhub::handlers
