@@ -2,6 +2,7 @@
 
 #include "Auction.h"
 
+#include <QString>
 #include <optional>
 #include <vector>
 
@@ -29,6 +30,8 @@ public:
     static bool remove(qint64 id, qint64 sellerId);
 
     static int cancel(qint64 id, qint64 sellerId);
+
+    static std::vector<Auction> search(const QString& query);
 };
 
 }  // namespace auctionhub::models
