@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>AuctionHub</title>
+    <title>AuctionHub — вход</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -10,16 +10,18 @@
 <header class="app-header">
     <div class="header-inner">
         <div class="brand">
-            <div class="brand-mark">A</div>
-            <div>
-                <h1>AuctionHub</h1>
-                <span>Интернет-аукционы</span>
-            </div>
+            <a href="/" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;">
+                <div class="brand-mark">A</div>
+                <div>
+                    <h1>AuctionHub</h1>
+                    <span>Интернет-аукционы</span>
+                </div>
+            </a>
         </div>
 
         <nav class="main-nav">
-            <a href="#auctions-section">Аукционы</a>
-            <a href="#seller-section" id="seller-nav-link">Мои аукционы</a>
+            <a href="/auctions.html">Аукционы</a>
+            <a href="/my-auctions.html" id="seller-nav-link" hidden>Мои аукционы</a>
         </nav>
 
         <div class="header-account">
@@ -45,7 +47,6 @@
 </header>
 
 <main>
-
     <section id="user-section" class="auth-section">
         <div class="auth-layout">
             <div class="auth-intro">
@@ -58,8 +59,6 @@
             </div>
 
             <div class="auth-card">
-                <div id="user-info" class="auth-user-info" hidden></div>
-
                 <div id="login-block">
                     <div class="auth-card-header">
                         <h3>Добро пожаловать</h3>
@@ -69,29 +68,15 @@
                     <form id="login-form" class="auth-form">
                         <div class="form-group">
                             <label for="login-email">Email</label>
-                            <input
-                                type="email"
-                                id="login-email"
-                                placeholder="you@example.com"
-                                autocomplete="email"
-                                required
-                            >
+                            <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
                         </div>
 
                         <div class="form-group">
                             <label for="login-password">Пароль</label>
-                            <input
-                                type="password"
-                                id="login-password"
-                                placeholder="Введите пароль"
-                                autocomplete="current-password"
-                                required
-                            >
+                            <input type="password" id="login-password" placeholder="Введите пароль" autocomplete="current-password" required>
                         </div>
 
-                        <button type="submit" class="primary-action">
-                            Войти
-                        </button>
+                        <button type="submit" class="primary-action">Войти</button>
                     </form>
 
                     <div id="login-message" class="message"></div>
@@ -110,24 +95,12 @@
                     <form id="user-form" class="auth-form">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input
-                                type="email"
-                                id="email"
-                                placeholder="you@example.com"
-                                autocomplete="email"
-                                required
-                            >
+                            <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required>
                         </div>
 
                         <div class="form-group">
                             <label for="password">Пароль</label>
-                            <input
-                                type="password"
-                                id="password"
-                                placeholder="Минимум 6 символов"
-                                autocomplete="new-password"
-                                required
-                            >
+                            <input type="password" id="password" placeholder="Минимум 6 символов" autocomplete="new-password" required>
                         </div>
 
                         <div class="form-group">
@@ -135,6 +108,7 @@
                             <select id="role">
                                 <option value="seller">Продавец</option>
                                 <option value="bidder">Участник</option>
+                                <option value="moderator">Модератор</option>
                             </select>
                         </div>
 
@@ -143,9 +117,7 @@
                             <span>Мне 18 лет или больше</span>
                         </label>
 
-                        <button type="submit" class="primary-action">
-                            Зарегистрироваться
-                        </button>
+                        <button type="submit" class="primary-action">Зарегистрироваться</button>
                     </form>
 
                     <div id="user-message" class="message"></div>
@@ -154,203 +126,12 @@
                         Уже есть аккаунт? <a href="#" id="show-login">Войти</a>
                     </p>
                 </div>
-
-                <button id="logout-button" type="button" hidden>Выйти</button>
             </div>
         </div>
     </section>
-
-    <!-- Управление продавца -->
-    <section id="seller-section" hidden>
-        <div class="section-header">
-            <h2>Управление аукционами</h2>
-            <p>Создайте аукцион, добавьте в него лоты и опубликуйте его для участников.</p>
-        </div>
-
-        <div class="form-card">
-            <h3>Создать аукцион</h3>
-
-            <form id="auction-form">
-                <div class="form-group">
-                    <label for="auction-title">Название аукциона</label>
-                    <input
-                        type="text"
-                        id="auction-title"
-                        placeholder="Например: Аукцион электроники"
-                        required
-                    >
-                    <small>Короткое и понятное название, по которому участники смогут найти аукцион.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="auction-description">Описание аукциона</label>
-                    <textarea
-                        id="auction-description"
-                        placeholder="Расскажите, что будет продаваться на аукционе, какие действуют условия участия, сроки проведения и другую важную информацию..."
-                        rows="7"
-                        required
-                    ></textarea>
-                    <small>Укажите основные условия аукциона и информацию, которую должен знать участник.</small>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="auction-step">Шаг ставки</label>
-                        <input
-                            type="number"
-                            id="auction-step"
-                            placeholder="Например: 100"
-                            step="0.01"
-                            min="0.01"
-                            required
-                        >
-                        <small>Минимальная сумма увеличения ставки.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="auction-start-price">Начальная цена</label>
-                        <input
-                            type="number"
-                            id="auction-start-price"
-                            placeholder="Например: 1000"
-                            step="0.01"
-                            min="0.01"
-                            required
-                        >
-                        <small>Цена, с которой начинается торг.</small>
-                    </div>
-                </div>
-
-                <button type="submit">Создать аукцион</button>
-            </form>
-
-            <div id="auction-message" class="message"></div>
-        </div>
-
-        <div class="seller-block">
-            <h3>Мои аукционы</h3>
-            <p class="section-description">Здесь отображаются созданные вами аукционы.</p>
-            <div id="my-auctions-list"></div>
-        </div>
-
-        <!-- Управление выбранным аукционом -->
-        <div id="auction-management" hidden>
-            <div class="form-card">
-                <h3>Управление выбранным аукционом</h3>
-                <div id="selected-auction-details"></div>
-
-                <div class="management-divider"></div>
-
-                <h4>Добавить лот</h4>
-                <p class="section-description">
-                    Лот — отдельный товар или объект, который будет выставлен на торги.
-                </p>
-
-                <form id="lot-form">
-                    <div class="form-group">
-                        <label for="new-lot-title">Название лота</label>
-                        <input
-                            type="text"
-                            id="new-lot-title"
-                            placeholder="Например: iPhone 15 Pro 256 GB"
-                            required
-                        >
-                    </div>
-
-                    <div class="form-group">
-                        <label for="new-lot-description">Описание лота</label>
-                        <textarea
-                            id="new-lot-description"
-                            placeholder="Опишите товар: состояние, характеристики, комплектацию и другую важную информацию..."
-                            rows="6"
-                            required
-                        ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="new-lot-start-price">Начальная цена лота</label>
-                        <input
-                            type="number"
-                            id="new-lot-start-price"
-                            placeholder="Например: 500"
-                            step="0.01"
-                            min="0.01"
-                            required
-                        >
-                        <small>Цена, с которой начинается торг за этот лот.</small>
-                    </div>
-
-                    <button type="submit">Добавить лот</button>
-                </form>
-
-                <div id="lot-management-message" class="message"></div>
-
-                <div class="management-divider"></div>
-
-                <div class="auction-actions">
-                    <button id="publish-auction" type="button">
-                        Опубликовать аукцион
-                    </button>
-                    <button id="cancel-auction" type="button">
-                        Отменить аукцион
-                    </button>
-                    <button id="delete-auction" type="button">
-                        Удалить аукцион
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-
-    <!-- Список аукционов -->
-    <section id="auctions-section">
-
-        <h2>Аукционы</h2>
-
-        <button id="refresh-auctions">
-            Обновить список
-        </button>
-
-        <div id="auctions-list"></div>
-
-    </section>
-
-
-    <!-- Лот -->
-    <section id="lot-section" hidden>
-
-        <h2>Лот: <span id="lot-title"></span></h2>
-
-        <div id="lot-details"></div>
-
-        <h3>Сделать ставку</h3>
-
-        <form id="bid-form">
-
-            <input
-                type="number"
-                id="bid-amount"
-                step="0.01"
-                min="0.01"
-                placeholder="Сумма"
-                required
-            >
-
-            <button type="submit">Поставить</button>
-        </form>
-
-        <div id="bid-message" class="message"></div>
-
-        <h3>История ставок</h3>
-
-        <div id="bids-list"></div>
-
-    </section>
-
 </main>
 
+<script src="/common.js"></script>
 <script src="/app.js"></script>
-
 </body>
 </html>
