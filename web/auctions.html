@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AuctionHub — аукционы</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="brand">
+            <a href="/" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;">
+                <div class="brand-mark">A</div>
+                <div>
+                    <h1>AuctionHub</h1>
+                    <span>Интернет-аукционы</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            <a href="/auctions.html">Аукционы</a>
+            <a href="/my-auctions.html" id="seller-nav-link" hidden>Мои аукционы</a>
+        </nav>
+
+        <div class="header-account">
+            <button id="account-button" class="account-button" type="button" hidden>
+                <span id="account-avatar" class="account-avatar">A</span>
+                <span id="account-name">Аккаунт</span>
+                <span class="account-chevron">⌄</span>
+            </button>
+
+            <div id="account-menu" class="account-menu" hidden>
+                <div class="account-menu-user">
+                    <div id="account-menu-avatar" class="account-avatar large">A</div>
+                    <div>
+                        <strong id="account-menu-email">Пользователь</strong>
+                        <span id="account-menu-role">Участник</span>
+                    </div>
+                </div>
+                <div class="account-menu-divider"></div>
+                <button id="account-logout" type="button">Выйти</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section id="auctions-section">
+        <h2>Аукционы</h2>
+
+        <div class="search-bar">
+            <input type="text" id="auction-search" placeholder="Поиск по названию...">
+            <button id="auction-search-button" type="button">Найти</button>
+            <button id="auction-search-reset" type="button">Сбросить</button>
+        </div>
+
+        <div id="auctions-list"></div>
+    </section>
+
+    <section id="lot-section" hidden>
+        <h2>Лот: <span id="lot-title"></span></h2>
+        <div id="lot-details"></div>
+
+        <h3>Сделать ставку</h3>
+        <form id="bid-form">
+            <input type="number" id="bid-amount" step="0.01" min="0.01" placeholder="Сумма" required>
+            <button type="submit">Поставить</button>
+        </form>
+        <div id="bid-message" class="message"></div>
+
+        <h3>История ставок</h3>
+        <div id="bids-list"></div>
+    </section>
+</main>
+
+<script src="/common.js"></script>
+<script src="/auctions.js"></script>
+</body>
+</html>

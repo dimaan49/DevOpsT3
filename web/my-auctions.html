@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AuctionHub — мои аукционы</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="brand">
+            <a href="/" style="display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;">
+                <div class="brand-mark">A</div>
+                <div>
+                    <h1>AuctionHub</h1>
+                    <span>Интернет-аукционы</span>
+                </div>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            <a href="/auctions.html">Аукционы</a>
+            <a href="/my-auctions.html" id="seller-nav-link">Мои аукционы</a>
+        </nav>
+
+        <div class="header-account">
+            <button id="account-button" class="account-button" type="button" hidden>
+                <span id="account-avatar" class="account-avatar">A</span>
+                <span id="account-name">Аккаунт</span>
+                <span class="account-chevron">⌄</span>
+            </button>
+
+            <div id="account-menu" class="account-menu" hidden>
+                <div class="account-menu-user">
+                    <div id="account-menu-avatar" class="account-avatar large">A</div>
+                    <div>
+                        <strong id="account-menu-email">Пользователь</strong>
+                        <span id="account-menu-role">Участник</span>
+                    </div>
+                </div>
+                <div class="account-menu-divider"></div>
+                <button id="account-logout" type="button">Выйти</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section id="seller-section">
+        <div class="section-header">
+            <h2>Управление аукционами</h2>
+            <p>Создайте аукцион, добавьте в него лоты и опубликуйте его для участников.</p>
+        </div>
+
+        <div class="form-card">
+            <h3>Создать аукцион</h3>
+            <form id="auction-form">
+                <div class="form-group">
+                    <label for="auction-title">Название аукциона</label>
+                    <input type="text" id="auction-title" placeholder="Например: Аукцион электроники" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="auction-description">Описание аукциона</label>
+                    <textarea id="auction-description" rows="5" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="auction-step">Шаг ставки</label>
+                        <input type="number" id="auction-step" step="0.01" min="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="auction-start-price">Начальная цена</label>
+                        <input type="number" id="auction-start-price" step="0.01" min="0.01" required>
+                    </div>
+                </div>
+
+                <button type="submit">Создать аукцион</button>
+            </form>
+            <div id="auction-message" class="message"></div>
+        </div>
+
+        <div class="seller-block">
+            <h3>Мои аукционы</h3>
+            <div id="my-auctions-list"></div>
+        </div>
+
+        <div id="auction-management" hidden>
+            <div class="form-card">
+                <h3>Управление выбранным аукционом</h3>
+                <div id="selected-auction-details"></div>
+
+                <div class="management-divider"></div>
+                <h4>Добавить лот</h4>
+                <p class="section-description">Лот — отдельный товар или объект, который будет выставлен на торги.</p>
+
+                <form id="lot-form">
+                    <div class="form-group">
+                        <label for="new-lot-title">Название лота</label>
+                        <input type="text" id="new-lot-title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-lot-description">Описание лота</label>
+                        <textarea id="new-lot-description" rows="4" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="new-lot-start-price">Начальная цена лота</label>
+                        <input type="number" id="new-lot-start-price" step="0.01" min="0.01" required>
+                    </div>
+
+                    <button type="submit">Добавить лот</button>
+                </form>
+                <div id="lot-management-message" class="message"></div>
+
+                <div class="management-divider"></div>
+
+                <div class="auction-actions">
+                    <button id="publish-auction" type="button">Опубликовать</button>
+                    <button id="cancel-auction" type="button">Отменить</button>
+                    <button id="delete-auction" type="button">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="/common.js"></script>
+<script src="/my-auctions.js"></script>
+</body>
+</html>
