@@ -135,3 +135,54 @@ TEST_CASE("LotRepository: create with zero start_price fails", "[db][lot][bounda
     REQUIRE(models::LotRepository::create(auctionId, "L", "", 0.0) == -1);
     REQUIRE(models::LotRepository::create(auctionId, "L", "", -50.0) == -1);
 }
+
+
+TEST_CASE("AuctionRepository: search by title substring", "[db][auction]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+    const qint64 sellerId = models::UserRepository::create("s-srch@test.local", hash, "seller", true);
+
+    models::AuctionRepository::create(sellerId, "Antique watch", "", 100.0, 1000.0);
+    models::AuctionRepository::create(sellerId, "Modern watch", "", 100.0, 1000.0);
+    models::AuctionRepository::create(sellerId, "Old painting", "", 100.0, 1000.0);
+
+    const auto watches = models::AuctionRepository::search("watch");
+    REQUIRE(watches.size() == 2);
+
+    const auto antique = models::AuctionRepository::search("antique");
+    REQUIRE(antique.size() == 1);
+    REQUIRE(antique[0].title == "Antique watch");
+
+    const auto nothing = models::AuctionRepository::search("xyz");
+    REQUIRE(nothing.empty());
+}
+
+TEST_CASE("AuctionRepository: search is case-insensitive", "[db][auction]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+    const qint64 sellerId = models::UserRepository::create("s-srch2@test.local", hash, "seller", true);
+
+    models::AuctionRepository::create(sellerId, "Antique Watch", "", 100.0, 1000.0);
+
+    REQUIRE(models::AuctionRepository::search("watch").size() == 1);
+    REQUIRE(models::AuctionRepository::search("WATCH").size() == 1);
+    REQUIRE(models::AuctionRepository::search("WaTcH").size() == 1);
+}
+
+TEST_CASE("AuctionRepository: empty search returns all", "[db][auction]")
+{
+    REQUIRE_TEST_DB_CONNECTED();
+
+    const QString hash = models::UserRepository::hashPassword("secret");
+    const qint64 sellerId = models::UserRepository::create("s-srch3@test.local", hash, "seller", true);
+
+    models::AuctionRepository::create(sellerId, "A", "", 100.0, 1000.0);
+    models::AuctionRepository::create(sellerId, "B", "", 100.0, 1000.0);
+
+    const auto all = models::AuctionRepository::search("");
+    REQUIRE(all.size() == 2);
+}
