@@ -111,6 +111,61 @@ int main(int argc, char* argv[]) {
         return QHttpServerResponse("application/javascript", f.readAll(),
                                    QHttpServerResponse::StatusCode::Ok);
     });
+
+    httpServer.route("/common.js", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QFile f("web/common.js");
+        if (!f.open(QIODevice::ReadOnly)) {
+            return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                       QHttpServerResponse::StatusCode::NotFound);
+        }
+        return QHttpServerResponse("application/javascript", f.readAll(),
+                                   QHttpServerResponse::StatusCode::Ok);
+    });
+
+    httpServer.route("/auctions.html", QHttpServerRequest::Method::Get,
+                     [](const QHttpServerRequest&) {
+                         QFile f("web/auctions.html");
+                         if (!f.open(QIODevice::ReadOnly)) {
+                             return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                                        QHttpServerResponse::StatusCode::NotFound);
+                         }
+                         return QHttpServerResponse("text/html", f.readAll(),
+                                                    QHttpServerResponse::StatusCode::Ok);
+                     });
+
+    httpServer.route("/auctions.js", QHttpServerRequest::Method::Get,
+                     [](const QHttpServerRequest&) {
+                         QFile f("web/auctions.js");
+                         if (!f.open(QIODevice::ReadOnly)) {
+                             return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                                        QHttpServerResponse::StatusCode::NotFound);
+                         }
+                         return QHttpServerResponse("application/javascript", f.readAll(),
+                                                    QHttpServerResponse::StatusCode::Ok);
+                     });
+
+    httpServer.route("/my-auctions.html", QHttpServerRequest::Method::Get,
+                     [](const QHttpServerRequest&) {
+                         QFile f("web/my-auctions.html");
+                         if (!f.open(QIODevice::ReadOnly)) {
+                             return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                                        QHttpServerResponse::StatusCode::NotFound);
+                         }
+                         return QHttpServerResponse("text/html", f.readAll(),
+                                                    QHttpServerResponse::StatusCode::Ok);
+                     });
+
+    httpServer.route("/my-auctions.js", QHttpServerRequest::Method::Get,
+                     [](const QHttpServerRequest&) {
+                         QFile f("web/my-auctions.js");
+                         if (!f.open(QIODevice::ReadOnly)) {
+                             return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                                        QHttpServerResponse::StatusCode::NotFound);
+                         }
+                         return QHttpServerResponse("application/javascript", f.readAll(),
+                                                    QHttpServerResponse::StatusCode::Ok);
+                     });
+
     httpServer.bind(&tcpServer);
 
     qInfo() << "AuctionHub server listening on" << host << ":" << port;
