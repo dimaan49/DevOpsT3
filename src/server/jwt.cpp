@@ -1,44 +1,38 @@
 #include "jwt.h"
 
+#include <QByteArray>
 #include <QCryptographicHash>
-#include <QMessageAuthenticationCode>
+#include <QDateTime>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QDateTime>
-#include <QByteArray>
+#include <QMessageAuthenticationCode>
 
 namespace auctionhub::server {
 
 namespace {
 
-QByteArray base64UrlEncode(const QByteArray &data)
-{
-    QByteArray b64 = data.toBase64(QByteArray::Base64UrlEncoding |
-                                    QByteArray::OmitTrailingEquals);
+QByteArray base64UrlEncode(const QByteArray& data) {
+    QByteArray b64 = data.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
     return b64;
 }
 
-QByteArray base64UrlDecode(const QByteArray &data)
-{
+QByteArray base64UrlDecode(const QByteArray& data) {
     return QByteArray::fromBase64(data, QByteArray::Base64UrlEncoding);
 }
 
-QByteArray secret()
-{
+QByteArray secret() {
     return qEnvironmentVariable("AUCTIONHUB_JWT_SECRET").toUtf8();
 }
 
-QByteArray sign(const QByteArray &data)
-{
+QByteArray sign(const QByteArray& data) {
     QMessageAuthenticationCode mac(QCryptographicHash::Sha256, secret());
     mac.addData(data);
     return mac.result();
 }
 
-} // namespace
+}  // namespace
 
-QString jwtEncode(qint64 userId, qint64 ttlSeconds)
-{
+QString jwtEncode(qint64 userId, qint64 ttlSeconds) {
     if (secret().isEmpty()) {
         return {};
     }
@@ -54,10 +48,10 @@ QString jwtEncode(qint64 userId, qint64 ttlSeconds)
     payload["iat"] = now;
     payload["exp"] = now + ttlSeconds;
 
-    const QByteArray headerB64 = base64UrlEncode(
-        QJsonDocument(header).toJson(QJsonDocument::Compact));
-    const QByteArray payloadB64 = base64UrlEncode(
-        QJsonDocument(payload).toJson(QJsonDocument::Compact));
+    const QByteArray headerB64 =
+        base64UrlEncode(QJsonDocument(header).toJson(QJsonDocument::Compact));
+    const QByteArray payloadB64 =
+        base64UrlEncode(QJsonDocument(payload).toJson(QJsonDocument::Compact));
 
     const QByteArray signingInput = headerB64 + "." + payloadB64;
     const QByteArray signature = base64UrlEncode(sign(signingInput));
@@ -65,8 +59,7 @@ QString jwtEncode(qint64 userId, qint64 ttlSeconds)
     return QString::fromLatin1(signingInput + "." + signature);
 }
 
-std::optional<JwtPayload> jwtDecode(const QString &token)
-{
+std::optional<JwtPayload> jwtDecode(const QString& token) {
     if (secret().isEmpty()) {
         return std::nullopt;
     }
@@ -105,4 +98,4 @@ std::optional<JwtPayload> jwtDecode(const QString &token)
     return result;
 }
 
-} // namespace auctionhub::server
+}  // namespace auctionhub::server

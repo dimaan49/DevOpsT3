@@ -1,39 +1,39 @@
-#!/bin/bash
-set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../deploy.conf"
-# Применение схемы БД с app-сервера на db-сервер.
+MIGRATIONS_DIR="${APP_DIR}/migrations"
 
-ENV_FILE="${APP_DIR}/.env"
-
-if [ ! -f "${ENV_FILE}" ]; then
-    echo "ERROR: ${ENV_FILE} not found"
+if [ ! -d "${MIGRATIONS_DIR}" ]; then
+    echo "ERROR: ${MIGRATIONS_DIR} not found"
     exit 1
 fi
 
-# shellcheck disable=SC1090
-set -a
-source "${ENV_FILE}"
-set +a
+export PGPASSWORD="${AUCTIONHUB_DB_PASSWORD}"
 
-SCHEMA_FILE="${APP_DIR}/src/db/schema.sql"
+# Создать таблицу schema_migrations
+psql -h "${AUCTIONHUB_DB_HOST}" -p "${AUCTIONHUB_DB_PORT}" \
+     -U "${AUCTIONHUB_DB_USER}" -d "${AUCTIONHUB_DB_NAME}" \
+     -v ON_ERROR_STOP=1 -q <<'EOF'
+CREATE TABLE IF NOT EXISTS schema_migrations (
+    version     TEXT PRIMARY KEY,
+    applied_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+EOF
 
-if [ ! -f "${SCHEMA_FILE}" ]; then
-    echo "ERROR: ${SCHEMA_FILE} not found"
-    exit 1
-fi
+for file in $(ls "${MIGRATIONS_DIR}"/*.sql | sort); do
+    version=$(basename "${file}" .sql)
+    already=$(psql -h "${AUCTIONHUB_DB_HOST}" -p "${AUCTIONHUB_DB_PORT}" \
+                   -U "${AUCTIONHUB_DB_USER}" -d "${AUCTIONHUB_DB_NAME}" \
+                   -tAc "SELECT 1 FROM schema_migrations WHERE version = '${version}'")
 
-echo "=== Applying database schema ==="
-echo "Host: ${AUCTIONHUB_DB_HOST}"
-echo "Database: ${AUCTIONHUB_DB_NAME}"
-echo "User: ${AUCTIONHUB_DB_USER}"
+    if [ "${already}" = "1" ]; then
+        echo "  [skip] ${version}"
+        continue
+    fi
 
-PGPASSWORD="${AUCTIONHUB_DB_PASSWORD}" psql \
-    -h "${AUCTIONHUB_DB_HOST}" \
-    -p "${AUCTIONHUB_DB_PORT}" \
-    -U "${AUCTIONHUB_DB_USER}" \
-    -d "${AUCTIONHUB_DB_NAME}" \
-    -f "${SCHEMA_FILE}"
+    echo "  [apply] ${version}"
+    psql -h "${AUCTIONHUB_DB_HOST}" -p "${AUCTIONHUB_DB_PORT}" \
+         -U "${AUCTIONHUB_DB_USER}" -d "${AUCTIONHUB_DB_NAME}" \
+         -v ON_ERROR_STOP=1 -f "${file}"
 
-echo
-echo "=== Schema applied ==="
+    psql -h "${AUCTIONHUB_DB_HOST}" -p "${AUCTIONHUB_DB_PORT}" \
+         -U "${AUCTIONHUB_DB_USER}" -d "${AUCTIONHUB_DB_NAME}" \
+         -c "INSERT INTO schema_migrations (version) VALUES ('${version}')"
+done

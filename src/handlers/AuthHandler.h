@@ -6,7 +6,7 @@ namespace auctionhub::handlers {
 
 class AuthHandler {
 public:
-    static void registerRoutes(QHttpServer &server);
+    static void registerRoutes(QHttpServer& server);
 };
 
-} // namespace auctionhub::handlers
+}  // namespace auctionhub::handlers

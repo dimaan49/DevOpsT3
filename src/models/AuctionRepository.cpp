@@ -2,37 +2,32 @@
 
 #include "../db/Database.h"
 
+#include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
-#include <QDebug>
 
 namespace auctionhub::models {
 
 namespace {
 
-Auction rowToAuction(const QSqlQuery &q)
-{
+Auction rowToAuction(const QSqlQuery& q) {
     Auction a;
-    a.id          = q.value("id").toLongLong();
-    a.sellerId    = q.value("seller_id").toLongLong();
-    a.title       = q.value("title").toString();
+    a.id = q.value("id").toLongLong();
+    a.sellerId = q.value("seller_id").toLongLong();
+    a.title = q.value("title").toString();
     a.description = q.value("description").toString();
-    a.step        = q.value("step").toDouble();
-    a.startPrice  = q.value("start_price").toDouble();
-    a.status      = q.value("status").toString();
-    a.createdAt   = q.value("created_at").toDateTime();
+    a.step = q.value("step").toDouble();
+    a.startPrice = q.value("start_price").toDouble();
+    a.status = q.value("status").toString();
+    a.createdAt = q.value("created_at").toDateTime();
     return a;
 }
 
-} // namespace
+}  // namespace
 
-qint64 AuctionRepository::create(qint64 sellerId,
-                                 const QString &title,
-                                 const QString &description,
-                                 double step,
-                                 double startPrice)
-{
+qint64 AuctionRepository::create(qint64 sellerId, const QString& title, const QString& description,
+                                 double step, double startPrice) {
     if (step <= 0.0 || startPrice <= 0.0) {
         return -1;
     }
@@ -43,10 +38,10 @@ qint64 AuctionRepository::create(qint64 sellerId,
         VALUES (:seller_id, :title, :description, :step, :start_price, 'draft')
         RETURNING id
     )");
-    q.bindValue(":seller_id",   sellerId);
-    q.bindValue(":title",       title);
+    q.bindValue(":seller_id", sellerId);
+    q.bindValue(":title", title);
     q.bindValue(":description", description);
-    q.bindValue(":step",        step);
+    q.bindValue(":step", step);
     q.bindValue(":start_price", startPrice);
 
     if (!q.exec()) {
@@ -59,8 +54,7 @@ qint64 AuctionRepository::create(qint64 sellerId,
     return q.value(0).toLongLong();
 }
 
-std::optional<Auction> AuctionRepository::findById(qint64 id)
-{
+std::optional<Auction> AuctionRepository::findById(qint64 id) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM auctions WHERE id = :id LIMIT 1");
     q.bindValue(":id", id);
@@ -75,8 +69,7 @@ std::optional<Auction> AuctionRepository::findById(qint64 id)
     return rowToAuction(q);
 }
 
-std::vector<Auction> AuctionRepository::findAll()
-{
+std::vector<Auction> AuctionRepository::findAll() {
     std::vector<Auction> result;
     QSqlQuery q(db::Database::handle());
 
@@ -91,8 +84,7 @@ std::vector<Auction> AuctionRepository::findAll()
     return result;
 }
 
-std::vector<Auction> AuctionRepository::findBySeller(qint64 sellerId)
-{
+std::vector<Auction> AuctionRepository::findBySeller(qint64 sellerId) {
     std::vector<Auction> result;
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM auctions WHERE seller_id = :sid ORDER BY created_at DESC");
@@ -108,12 +100,11 @@ std::vector<Auction> AuctionRepository::findBySeller(qint64 sellerId)
     return result;
 }
 
-bool AuctionRepository::updateStatus(qint64 id, const QString &status)
-{
+bool AuctionRepository::updateStatus(qint64 id, const QString& status) {
     QSqlQuery q(db::Database::handle());
     q.prepare("UPDATE auctions SET status = :status WHERE id = :id");
     q.bindValue(":status", status);
-    q.bindValue(":id",     id);
+    q.bindValue(":id", id);
 
     if (!q.exec()) {
         qCritical() << "AuctionRepository::updateStatus failed:" << q.lastError().text();
@@ -122,8 +113,7 @@ bool AuctionRepository::updateStatus(qint64 id, const QString &status)
     return q.numRowsAffected() > 0;
 }
 
-bool AuctionRepository::remove(qint64 id, qint64 sellerId)
-{
+bool AuctionRepository::remove(qint64 id, qint64 sellerId) {
     const auto auction = findById(id);
 
     if (!auction.has_value()) {
@@ -163,9 +153,7 @@ bool AuctionRepository::remove(qint64 id, qint64 sellerId)
     }
 
     QSqlQuery deleteLots(db);
-    deleteLots.prepare(
-        "DELETE FROM lots WHERE auction_id = :auction_id"
-    );
+    deleteLots.prepare("DELETE FROM lots WHERE auction_id = :auction_id");
     deleteLots.bindValue(":auction_id", id);
 
     if (!deleteLots.exec()) {
@@ -176,9 +164,7 @@ bool AuctionRepository::remove(qint64 id, qint64 sellerId)
     }
 
     QSqlQuery deleteAuction(db);
-    deleteAuction.prepare(
-        "DELETE FROM auctions WHERE id = :id AND seller_id = :seller_id"
-    );
+    deleteAuction.prepare("DELETE FROM auctions WHERE id = :id AND seller_id = :seller_id");
     deleteAuction.bindValue(":id", id);
     deleteAuction.bindValue(":seller_id", sellerId);
 
@@ -198,8 +184,7 @@ bool AuctionRepository::remove(qint64 id, qint64 sellerId)
     return true;
 }
 
-int AuctionRepository::cancel(qint64 id, qint64 sellerId)
-{
+int AuctionRepository::cancel(qint64 id, qint64 sellerId) {
     const auto auction = findById(id);
     if (!auction.has_value()) {
         return -2;
@@ -225,8 +210,7 @@ int AuctionRepository::cancel(qint64 id, qint64 sellerId)
     q.bindValue(":auction_id", id);
 
     if (!q.exec()) {
-        qCritical() << "AuctionRepository::cancel: bids check failed:"
-                    << q.lastError().text();
+        qCritical() << "AuctionRepository::cancel: bids check failed:" << q.lastError().text();
         return -1;
     }
     if (q.next()) {
@@ -239,4 +223,4 @@ int AuctionRepository::cancel(qint64 id, qint64 sellerId)
     return 0;
 }
 
-} // namespace auctionhub::models
+}  // namespace auctionhub::models

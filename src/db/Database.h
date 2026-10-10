@@ -21,7 +21,7 @@ public:
     static QSqlDatabase handle();
 
 private:
-    static constexpr const char *kConnectionName = "auctionhub";
+    static constexpr const char* kConnectionName = "auctionhub";
 };
 
-} // namespace auctionhub::db
+}  // namespace auctionhub::db

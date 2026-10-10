@@ -20,47 +20,29 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # --- Qt6 ---
-find_package(Qt6 REQUIRED COMPONENTS
+find_package(Qt6 6.5 REQUIRED COMPONENTS
     Core
     Network
     Sql
     HttpServer
 )
+include(FetchContent)
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v3.5.2
+)
+
+FetchContent_MakeAvailable(Catch2)
 
 qt_standard_project_setup()
 
 # --- Исполняемый файл сервера ---
+add_subdirectory(src)
+
+# --- Исполняемый файл сервера ---
 qt_add_executable(auctionhub_server
     src/main.cpp
-	src/db/Database.h
-	src/db/Database.cpp
-    src/models/User.h
-    src/models/UserRepository.h
-    src/models/UserRepository.cpp
-    src/models/Auction.h
-    src/models/AuctionRepository.h
-    src/models/AuctionRepository.cpp
-    src/models/Lot.h
-    src/models/LotRepository.h
-    src/models/LotRepository.cpp
-    src/models/Bid.h
-    src/models/BidRepository.h
-    src/models/BidRepository.cpp
-    src/server/ApiResponse.h
-    src/handlers/UserHandler.h
-    src/handlers/UserHandler.cpp
-    src/handlers/AuctionHandler.h
-    src/handlers/AuctionHandler.cpp
-    src/handlers/BidHandler.h
-    src/handlers/BidHandler.cpp
-    src/server/jwt.h
-    src/server/jwt.cpp
-    src/server/auth.h
-    src/server/auth.cpp
-    src/models/RevokedTokenRepository.h
-    src/models/RevokedTokenRepository.cpp
-    src/handlers/AuthHandler.h
-    src/handlers/AuthHandler.cpp
 )
 
 target_include_directories(auctionhub_server PRIVATE
@@ -68,13 +50,14 @@ target_include_directories(auctionhub_server PRIVATE
 )
 
 target_link_libraries(auctionhub_server PRIVATE
-    Qt6::Core
-    Qt6::Network
-    Qt6::Sql
-    Qt6::HttpServer
+    auctionhub_core
 )
 
 set_target_properties(auctionhub_server PROPERTIES
     WIN32_EXECUTABLE OFF
     MACOSX_BUNDLE OFF
 )
+
+# --- Тесты ---
+enable_testing()
+add_subdirectory(tests)

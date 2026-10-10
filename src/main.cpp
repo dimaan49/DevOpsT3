@@ -1,23 +1,22 @@
+#include "db/Database.h"
+#include "handlers/AuctionHandler.h"
+#include "handlers/AuthHandler.h"
+#include "handlers/BidHandler.h"
+#include "handlers/ReviewHandler.h"
+#include "handlers/UserHandler.h"
+
 #include <QCoreApplication>
+#include <QDebug>
 #include <QFile>
 #include <QHostAddress>
 #include <QHttpServer>
 #include <QHttpServerResponse>
-#include <QJsonObject>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QTcpServer>
 #include <QTextStream>
-#include <QDebug>
-#include "db/Database.h"
-#include "handlers/UserHandler.h"
-#include "handlers/AuctionHandler.h"
-#include "handlers/BidHandler.h"
-#include "handlers/AuthHandler.h"
 
-static void loadDotEnv(const QString &path)
-{
-
-
+static void loadDotEnv(const QString& path) {
 
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -42,8 +41,7 @@ static void loadDotEnv(const QString &path)
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
     app.setApplicationName("AuctionHub");
 
@@ -67,11 +65,11 @@ int main(int argc, char *argv[])
     }
 
     QHttpServer httpServer;
-	auctionhub::handlers::UserHandler::registerRoutes(httpServer);
+    auctionhub::handlers::UserHandler::registerRoutes(httpServer);
     auctionhub::handlers::AuctionHandler::registerRoutes(httpServer);
     auctionhub::handlers::BidHandler::registerRoutes(httpServer);
-	auctionhub::handlers::AuthHandler::registerRoutes(httpServer);
-
+    auctionhub::handlers::AuthHandler::registerRoutes(httpServer);
+    auctionhub::handlers::ReviewHandler::registerRoutes(httpServer);
 
     httpServer.route("/health", []() {
         QJsonObject obj;
@@ -81,52 +79,39 @@ int main(int argc, char *argv[])
         obj["status"] = dbOk ? "ok" : "degraded";
         obj["database"] = dbOk ? "ok" : "down";
 
-        const auto code = dbOk
-            ? QHttpServerResponse::StatusCode::Ok
-            : QHttpServerResponse::StatusCode::ServiceUnavailable;
+        const auto code = dbOk ? QHttpServerResponse::StatusCode::Ok
+                               : QHttpServerResponse::StatusCode::ServiceUnavailable;
 
         return QHttpServerResponse(obj, code);
     });
-	httpServer.route("/", QHttpServerRequest::Method::Get,
-		[](const QHttpServerRequest &) {
-			QFile f("web/index.html");
-			if (!f.open(QIODevice::ReadOnly)) {
-				return QHttpServerResponse(
-					"text/plain",
-					QByteArray("web/index.html not found"),
-					QHttpServerResponse::StatusCode::NotFound);
-			}
-			return QHttpServerResponse(
-				"text/html",
-				f.readAll(),
-				QHttpServerResponse::StatusCode::Ok);
-		});
+    httpServer.route("/", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QFile f("web/index.html");
+        if (!f.open(QIODevice::ReadOnly)) {
+            return QHttpServerResponse("text/plain", QByteArray("web/index.html not found"),
+                                       QHttpServerResponse::StatusCode::NotFound);
+        }
+        return QHttpServerResponse("text/html", f.readAll(), QHttpServerResponse::StatusCode::Ok);
+    });
 
-	httpServer.route("/style.css", QHttpServerRequest::Method::Get,
-		[](const QHttpServerRequest &) {
-			QFile f("web/style.css");
-			if (!f.open(QIODevice::ReadOnly)) {
-				return QHttpServerResponse(
-					"text/plain", QByteArray("not found"),
-					QHttpServerResponse::StatusCode::NotFound);
-			}
-			return QHttpServerResponse(
-				"text/css", f.readAll(), QHttpServerResponse::StatusCode::Ok);
-		});
+    httpServer.route("/style.css", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QFile f("web/style.css");
+        if (!f.open(QIODevice::ReadOnly)) {
+            return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                       QHttpServerResponse::StatusCode::NotFound);
+        }
+        return QHttpServerResponse("text/css", f.readAll(), QHttpServerResponse::StatusCode::Ok);
+    });
 
-	httpServer.route("/app.js", QHttpServerRequest::Method::Get,
-		[](const QHttpServerRequest &) {
-			QFile f("web/app.js");
-			if (!f.open(QIODevice::ReadOnly)) {
-				return QHttpServerResponse(
-					"text/plain", QByteArray("not found"),
-					QHttpServerResponse::StatusCode::NotFound);
-			}
-			return QHttpServerResponse(
-				"application/javascript", f.readAll(),
-				QHttpServerResponse::StatusCode::Ok);
-		});
-		httpServer.bind(&tcpServer);
+    httpServer.route("/app.js", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QFile f("web/app.js");
+        if (!f.open(QIODevice::ReadOnly)) {
+            return QHttpServerResponse("text/plain", QByteArray("not found"),
+                                       QHttpServerResponse::StatusCode::NotFound);
+        }
+        return QHttpServerResponse("application/javascript", f.readAll(),
+                                   QHttpServerResponse::StatusCode::Ok);
+    });
+    httpServer.bind(&tcpServer);
 
     qInfo() << "AuctionHub server listening on" << host << ":" << port;
     qInfo() << "Healthcheck: http://localhost:" << port << "/health";

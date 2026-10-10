@@ -1,13 +1,12 @@
 #include "auth.h"
 
-#include "jwt.h"
 #include "../models/RevokedTokenRepository.h"
 #include "../models/UserRepository.h"
+#include "jwt.h"
 
 namespace auctionhub::server {
 
-QString extractToken(const QHttpServerRequest &req)
-{
+QString extractToken(const QHttpServerRequest& req) {
     const QByteArray header = req.value("Authorization");
     if (header.isEmpty()) {
         return {};
@@ -20,8 +19,7 @@ QString extractToken(const QHttpServerRequest &req)
     return value.mid(prefix.length()).trimmed();
 }
 
-std::optional<models::User> authenticate(const QHttpServerRequest &req)
-{
+std::optional<models::User> authenticate(const QHttpServerRequest& req) {
     const QString token = extractToken(req);
     if (token.isEmpty()) {
         return std::nullopt;
@@ -39,4 +37,4 @@ std::optional<models::User> authenticate(const QHttpServerRequest &req)
     return models::UserRepository::findById(payload->userId);
 }
 
-} // namespace auctionhub::server
+}  // namespace auctionhub::server

@@ -3,34 +3,30 @@
 #include "../db/Database.h"
 
 #include <QCryptographicHash>
+#include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
-#include <QDebug>
 
 namespace auctionhub::models {
 
 namespace {
 
-User rowToUser(const QSqlQuery &q)
-{
+User rowToUser(const QSqlQuery& q) {
     User u;
-    u.id           = q.value("id").toLongLong();
-    u.email        = q.value("email").toString();
+    u.id = q.value("id").toLongLong();
+    u.email = q.value("email").toString();
     u.passwordHash = q.value("password_hash").toString();
-    u.role         = q.value("role").toString();
+    u.role = q.value("role").toString();
     u.ageConfirmed = q.value("age_confirmed").toBool();
-    u.createdAt    = q.value("created_at").toDateTime();
+    u.createdAt = q.value("created_at").toDateTime();
     return u;
 }
 
-}
+}  // namespace
 
-qint64 UserRepository::create(const QString &email,
-                              const QString &passwordHash,
-                              const QString &role,
-                              bool ageConfirmed)
-{
+qint64 UserRepository::create(const QString& email, const QString& passwordHash,
+                              const QString& role, bool ageConfirmed) {
     if (emailExists(email)) {
         return -2;
     }
@@ -41,9 +37,9 @@ qint64 UserRepository::create(const QString &email,
         VALUES (:email, :password_hash, :role, :age_confirmed)
         RETURNING id
     )");
-    q.bindValue(":email",         email);
+    q.bindValue(":email", email);
     q.bindValue(":password_hash", passwordHash);
-    q.bindValue(":role",          role);
+    q.bindValue(":role", role);
     q.bindValue(":age_confirmed", ageConfirmed);
 
     if (!q.exec()) {
@@ -58,8 +54,7 @@ qint64 UserRepository::create(const QString &email,
     return q.value(0).toLongLong();
 }
 
-std::optional<User> UserRepository::findByEmail(const QString &email)
-{
+std::optional<User> UserRepository::findByEmail(const QString& email) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM users WHERE email = :email LIMIT 1");
     q.bindValue(":email", email);
@@ -74,8 +69,7 @@ std::optional<User> UserRepository::findByEmail(const QString &email)
     return rowToUser(q);
 }
 
-std::optional<User> UserRepository::findById(qint64 id)
-{
+std::optional<User> UserRepository::findById(qint64 id) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT * FROM users WHERE id = :id LIMIT 1");
     q.bindValue(":id", id);
@@ -90,8 +84,7 @@ std::optional<User> UserRepository::findById(qint64 id)
     return rowToUser(q);
 }
 
-bool UserRepository::emailExists(const QString &email)
-{
+bool UserRepository::emailExists(const QString& email) {
     QSqlQuery q(db::Database::handle());
     q.prepare("SELECT 1 FROM users WHERE email = :email LIMIT 1");
     q.bindValue(":email", email);
@@ -103,16 +96,12 @@ bool UserRepository::emailExists(const QString &email)
     return q.next();
 }
 
-QString UserRepository::hashPassword(const QString &password)
-{
-    const QByteArray hash = QCryptographicHash::hash(
-        password.toUtf8(), QCryptographicHash::Sha256);
+QString UserRepository::hashPassword(const QString& password) {
+    const QByteArray hash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256);
     return QString::fromLatin1(hash.toHex());
 }
 
-std::optional<User> UserRepository::verifyPassword(const QString &email,
-                                                   const QString &password)
-{
+std::optional<User> UserRepository::verifyPassword(const QString& email, const QString& password) {
     const auto user = findByEmail(email);
     if (!user.has_value()) {
         return std::nullopt;
@@ -122,4 +111,4 @@ std::optional<User> UserRepository::verifyPassword(const QString &email,
     }
     return user;
 }
-} // namespace auctionhub::models
+}  // namespace auctionhub::models
