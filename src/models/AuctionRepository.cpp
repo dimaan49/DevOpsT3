@@ -24,6 +24,12 @@ Auction rowToAuction(const QSqlQuery& q) {
     return a;
 }
 
+QString escapeSql(const QString& value) {
+    QString escaped = value;
+    escaped.replace("'", "''");
+    return escaped;
+}
+
 }  // namespace
 
 qint64 AuctionRepository::create(qint64 sellerId, const QString& title, const QString& description,
@@ -221,6 +227,31 @@ int AuctionRepository::cancel(qint64 id, qint64 sellerId) {
         return -1;
     }
     return 0;
+}
+
+std::vector<Auction> AuctionRepository::search(const QString& query) {
+    std::vector<Auction> result;
+    QSqlQuery q(db::Database::handle());
+
+    QString sql;
+    if (query.isEmpty()) {
+        sql = "SELECT * FROM auctions ORDER BY created_at DESC";
+    } else {
+        const QString escaped = escapeSql(query);
+        sql = QString("SELECT * FROM auctions "
+                      "WHERE title ILIKE '%%%1%%' "
+                      "ORDER BY created_at DESC")
+                  .arg(escaped);
+    }
+
+    if (!q.exec(sql)) {
+        qCritical() << "AuctionRepository::search failed:" << q.lastError().text();
+        return result;
+    }
+    while (q.next()) {
+        result.push_back(rowToAuction(q));
+    }
+    return result;
 }
 
 }  // namespace auctionhub::models
