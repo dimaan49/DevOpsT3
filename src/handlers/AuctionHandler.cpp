@@ -107,8 +107,10 @@ void AuctionHandler::registerRoutes(QHttpServer& server) {
 
     // GET /api/auctions — список всех аукционов
     server.route("/api/auctions", QHttpServerRequest::Method::Get,
-                 [](const QHttpServerRequest&) -> QHttpServerResponse {
-                     const auto auctions = models::AuctionRepository::findAll();
+                 [](const QHttpServerRequest& req) -> QHttpServerResponse {
+                     const QString query = req.query().queryItemValue("q");
+
+                     const auto auctions = models::AuctionRepository::search(query);
                      QJsonArray arr;
                      for (const auto& a : auctions) {
                          arr.append(auctionToJson(a));
@@ -267,7 +269,7 @@ void AuctionHandler::registerRoutes(QHttpServer& server) {
 
                      QJsonObject response;
                      response["status"] = "ok";
-                     response["id"]     = id;
+                     response["id"] = id;
                      return api::ok(response);
                  });
 }
