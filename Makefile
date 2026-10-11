@@ -158,3 +158,12 @@ restore:
 	
 test-backup-restore:
 	bash scripts/test-backup-restore.sh
+
+
+# --- Lab 4: container policy checks ---
+.PHONY: container-check container-build
+container-check:
+	bash scripts/container-check.sh
+
+container-build: container-check
+	docker compose build app
