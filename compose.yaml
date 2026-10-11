@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:16.6-bookworm@sha256:557fea37a744d5f4c8faab304b0a90858b53ab119735a88c131fd19dab802f36
+    environment:
+      POSTGRES_DB: auctionhub
+      POSTGRES_USER: auctionhub_admin
+      POSTGRES_PASSWORD: ${AUCTIONHUB_DB_ADMIN_PASSWORD:?Set AUCTIONHUB_DB_ADMIN_PASSWORD in .env}
+      APP_DB_USER: ${AUCTIONHUB_DB_USER:?Set AUCTIONHUB_DB_USER in .env}
+      APP_DB_PASSWORD: ${AUCTIONHUB_DB_PASSWORD:?Set AUCTIONHUB_DB_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-create-app-user.sh:/docker-entrypoint-initdb.d/01-create-app-user.sh:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    mem_limit: 768m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+
+  app:
+    image: auctionhub:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      AUCTIONHUB_HOST: 0.0.0.0
+      AUCTIONHUB_PORT: "8080"
+      AUCTIONHUB_DB_HOST: db
+      AUCTIONHUB_DB_PORT: "5432"
+      AUCTIONHUB_DB_NAME: auctionhub
+      AUCTIONHUB_DB_USER: ${AUCTIONHUB_DB_USER:?Set AUCTIONHUB_DB_USER in .env}
+      AUCTIONHUB_DB_PASSWORD: ${AUCTIONHUB_DB_PASSWORD:?Set AUCTIONHUB_DB_PASSWORD in .env}
+      AUCTIONHUB_JWT_SECRET: ${AUCTIONHUB_JWT_SECRET:?Set AUCTIONHUB_JWT_SECRET in .env}
+      AUCTIONHUB_LOG_LEVEL: ${AUCTIONHUB_LOG_LEVEL:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--show-error", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    init: true
+    stop_grace_period: 20s
+    restart: unless-stopped
+    mem_limit: 512m
+    cpus: 1.0
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+
+networks:
+  frontend:
+  backend:
+    internal: true
+
+volumes:
+  postgres_data:
