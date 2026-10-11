@@ -19,7 +19,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     AUCTIONHUB_PORT=8080
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl postgresql-client bash \
+    ca-certificates curl postgresql-client bash liblzma5 \
     libqt6core6t64 libqt6network6 libqt6sql6 \
     libqt6httpserver6 libqt6websockets6 libqt6sql6-psql libpq5 \
     && rm -rf /var/lib/apt/lists/* \

@@ -1,0 +1,11 @@
+# Критические файлы CI и приёмки должны проходить review владельца репозитория.
+/.github/workflows/ @dimaan49
+/.github/CODEOWNERS @dimaan49
+/Makefile @dimaan49
+/.clang-format @dimaan49
+/.clang-tidy @dimaan49
+/CMakeLists.txt @dimaan49
+/tests/ @dimaan49
+/scripts/test-migrations.sh @dimaan49
+/scripts/test-backup-restore.sh @dimaan49
+/scripts/container-check.sh @dimaan49

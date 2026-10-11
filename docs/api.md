@@ -119,7 +119,7 @@ JWT stateless — его нельзя «удалить» из сервера. П
 
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token": "YOUR_JWT_TOKEN_HERE",
   "user": {
     "id": 1,
     "email": "user@example.com",

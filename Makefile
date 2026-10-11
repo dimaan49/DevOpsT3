@@ -2,6 +2,7 @@ BUILD_DIR           := build
 BUILD_COVERAGE_DIR  := build-coverage
 CMAKE               := cmake
 GENERATOR           := Ninja
+SHELL := /bin/bash
 TARGET              := auctionhub_server
 
 CLANG_FORMAT        := clang-format
@@ -53,7 +54,8 @@ env:
 configure:
 	$(CMAKE) -B $(BUILD_DIR) -G $(GENERATOR) \
 	    -DCMAKE_BUILD_TYPE=Debug \
-	    -DCMAKE_CXX_COMPILER=$(CXX)
+	    -DCMAKE_CXX_COMPILER=$(CXX) \
+		-DFETCHCONTENT_BASE_DIR=$(HOME)/.cache/cmake-fetchcontent
 build: configure
 	$(CMAKE) --build $(BUILD_DIR)
 
@@ -131,7 +133,7 @@ clean-coverage:
 	rm -rf $(BUILD_COVERAGE_DIR)
 
 # --- Полная проверка ---
-verify: quality test test-migrations test-backup-restoret
+verify: quality test test-migrations test-backup-restore
 	@echo
 	@echo "=== All verification checks passed ==="
 
