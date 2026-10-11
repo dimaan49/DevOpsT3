@@ -2,6 +2,7 @@ BUILD_DIR           := build
 BUILD_COVERAGE_DIR  := build-coverage
 CMAKE               := cmake
 GENERATOR           := Ninja
+SHELL := /bin/bash
 TARGET              := auctionhub_server
 
 CLANG_FORMAT        := clang-format
