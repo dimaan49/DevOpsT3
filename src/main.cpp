@@ -6,12 +6,6 @@
 #include "handlers/UserHandler.h"
 
 #include <QCoreApplication>
-#include <QSocketNotifier>
-#include <QObject>
-#include <cerrno>
-#include <csignal>
-#include <fcntl.h>
-#include <unistd.h>
 #include <QDebug>
 #include <QFile>
 #include <QHostAddress>
@@ -19,8 +13,14 @@
 #include <QHttpServerResponse>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QObject>
+#include <QSocketNotifier>
 #include <QTcpServer>
 #include <QTextStream>
+#include <cerrno>
+#include <csignal>
+#include <fcntl.h>
+#include <unistd.h>
 
 static void loadDotEnv(const QString& path) {
 
@@ -47,19 +47,17 @@ static void loadDotEnv(const QString& path) {
     }
 }
 
-
 namespace {
 int terminationPipe[2] = {-1, -1};
 
-void handleTerminationSignal(int signalNumber)
-{
+void handleTerminationSignal(int signalNumber) {
     const unsigned char value = static_cast<unsigned char>(signalNumber);
     if (terminationPipe[1] >= 0) {
         const ssize_t ignored = ::write(terminationPipe[1], &value, sizeof(value));
         (void)ignored;
     }
 }
-} // namespace
+}  // namespace
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
@@ -80,13 +78,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    struct sigaction action {};
+    struct sigaction action{};
     action.sa_handler = handleTerminationSignal;
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_RESTART;
 
-    if (::sigaction(SIGTERM, &action, nullptr) != 0 ||
-        ::sigaction(SIGINT, &action, nullptr) != 0) {
+    if (::sigaction(SIGTERM, &action, nullptr) != 0 || ::sigaction(SIGINT, &action, nullptr) != 0) {
         qCritical() << "Cannot install termination signal handlers";
         ::close(terminationPipe[0]);
         ::close(terminationPipe[1]);
@@ -94,24 +91,24 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    auto *signalNotifier =
-        new QSocketNotifier(terminationPipe[0], QSocketNotifier::Read, &app);
+    auto* signalNotifier = new QSocketNotifier(terminationPipe[0], QSocketNotifier::Read, &app);
 
-    QObject::connect(
-        signalNotifier, &QSocketNotifier::activated, &app,
-        [&app](QSocketDescriptor, QSocketNotifier::Type) {
-            unsigned char buffer[32];
-            while (::read(terminationPipe[0], buffer, sizeof(buffer)) > 0) {
-            }
-            qInfo() << "Termination signal received; shutting down gracefully";
-            app.quit();
-        });
+    QObject::connect(signalNotifier, &QSocketNotifier::activated, &app,
+                     [&app](QSocketDescriptor, QSocketNotifier::Type) {
+                         unsigned char buffer[32];
+                         while (::read(terminationPipe[0], buffer, sizeof(buffer)) > 0) {
+                         }
+                         qInfo() << "Termination signal received; shutting down gracefully";
+                         app.quit();
+                     });
 
     QObject::connect(&app, &QCoreApplication::aboutToQuit, [] {
         qInfo() << "Closing database connection";
         auctionhub::db::Database::close();
-        if (terminationPipe[0] >= 0) ::close(terminationPipe[0]);
-        if (terminationPipe[1] >= 0) ::close(terminationPipe[1]);
+        if (terminationPipe[0] >= 0)
+            ::close(terminationPipe[0]);
+        if (terminationPipe[1] >= 0)
+            ::close(terminationPipe[1]);
         terminationPipe[0] = terminationPipe[1] = -1;
     });
 

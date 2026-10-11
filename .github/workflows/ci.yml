@@ -1,0 +1,377 @@
+name: AuctionHub CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: auctionhub
+
+jobs:
+  quality:
+    name: Style and static analysis
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/cmake-fetchcontent
+          key: cmake-fetchcontent-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: |
+            cmake-fetchcontent-${{ runner.os }}-
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang clang-format clang-tidy \
+            g++ qt6-base-dev qt6-httpserver-dev qt6-websockets-dev \
+            libqt6sql6-psql libpq-dev postgresql-client git pkg-config
+
+      - name: Build and run quality checks
+        run: |
+          set -o pipefail
+          make quality 2>&1 | tee quality-report.txt
+
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: |
+            quality-report.txt
+            build/clang-tidy-report.txt
+          if-no-files-found: warn
+
+  tests:
+    name: Unit and integration tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.6-bookworm
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AUCTIONHUB_DB_HOST: localhost
+      AUCTIONHUB_DB_PORT: "5432"
+      AUCTIONHUB_DB_NAME: auctionhub_test
+      AUCTIONHUB_DB_USER: postgres
+      AUCTIONHUB_DB_PASSWORD: postgres
+      AUCTIONHUB_TEST_DB_PASSWORD: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/cmake-fetchcontent
+          key: cmake-fetchcontent-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+          restore-keys: |
+            cmake-fetchcontent-${{ runner.os }}-
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build clang clang-format clang-tidy \
+            g++ qt6-base-dev qt6-httpserver-dev qt6-websockets-dev \
+            libqt6sql6-psql libpq-dev postgresql-client git pkg-config
+
+      - name: Configure build
+        run: make configure
+
+      - name: Prepare isolated test database
+        run: |
+          createdb -h localhost -U postgres auctionhub_test
+          AUCTIONHUB_DB_NAME=auctionhub_test bash scripts/migrate.sh auctionhub_test
+
+      - name: Run tests
+        run: |
+          set -o pipefail
+          make test 2>&1 | tee test-run.log
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            test-run.log
+            build/test-report.xml
+          if-no-files-found: warn
+
+  migrations:
+    name: Migration tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.6-bookworm
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AUCTIONHUB_DB_HOST: localhost
+      AUCTIONHUB_DB_PORT: "5432"
+      AUCTIONHUB_DB_USER: postgres
+      AUCTIONHUB_DB_PASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Test migrations
+        run: |
+          set -o pipefail
+          make test-migrations 2>&1 | tee migration-report.txt
+
+      - name: Upload migration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-report
+          path: migration-report.txt
+          if-no-files-found: warn
+
+  backup-restore:
+    name: Backup and restore test
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.6-bookworm
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      AUCTIONHUB_DB_HOST: localhost
+      AUCTIONHUB_DB_PORT: "5432"
+      AUCTIONHUB_DB_USER: postgres
+      AUCTIONHUB_DB_PASSWORD: postgres
+      AUCTIONHUB_BACKUP_TEST_DB_NAME: auctionhub_backup_ci
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Test backup and restore
+        run: |
+          set -o pipefail
+          make test-backup-restore 2>&1 | tee backup-restore-report.txt
+
+      - name: Upload backup/restore report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-restore-report
+          path: backup-restore-report.txt
+          if-no-files-found: warn
+
+  security:
+    name: Secret and dependency scanning
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Scan Git history for secrets
+        run: |
+          mkdir -p "$RUNNER_TEMP/gitleaks"
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/repo" \
+            -v "$RUNNER_TEMP/gitleaks:/reports" \
+            ghcr.io/gitleaks/gitleaks:v8.24.2 \
+            detect --source=/repo --no-banner --redact \
+            --report-format json --report-path /reports/gitleaks.json \
+            --exit-code 1
+
+      - name: Scan dependencies and repository configuration
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          output: trivy-fs-report.txt
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            ${{ runner.temp }}/gitleaks/gitleaks.json
+            trivy-fs-report.txt
+          if-no-files-found: warn
+
+  container-check:
+    name: Container policy checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create temporary CI configuration
+        run: |
+          umask 077
+          cat > .env <<'ENV'
+          AUCTIONHUB_DB_ADMIN_PASSWORD=ci-admin-password-not-for-production
+          AUCTIONHUB_DB_USER=auctionhub
+          AUCTIONHUB_DB_PASSWORD=ci-app-password-not-for-production
+          AUCTIONHUB_JWT_SECRET=ci-jwt-secret-not-for-production-012345678901234567890123456789
+          AUCTIONHUB_LOG_LEVEL=info
+          ENV
+
+      - name: Check container policies
+        run: make container-check
+
+  image-build:
+    name: Build container image
+    needs: [container-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create temporary CI configuration
+        run: |
+          umask 077
+          cat > .env <<'ENV'
+          AUCTIONHUB_DB_ADMIN_PASSWORD=ci-admin-password-not-for-production
+          AUCTIONHUB_DB_USER=auctionhub
+          AUCTIONHUB_DB_PASSWORD=ci-app-password-not-for-production
+          AUCTIONHUB_JWT_SECRET=ci-jwt-secret-not-for-production-012345678901234567890123456789
+          AUCTIONHUB_LOG_LEVEL=info
+          ENV
+
+      - name: Build image
+        run: |
+          docker compose build app
+          docker tag auctionhub:1.0.0 auctionhub:${GITHUB_SHA}
+          docker save auctionhub:${GITHUB_SHA} -o auctionhub-image.tar
+
+      - name: Upload built image
+        uses: actions/upload-artifact@v4
+        with:
+          name: auctionhub-image
+          path: auctionhub-image.tar
+          retention-days: 1
+
+  image-scan:
+    name: Container image vulnerability scan
+    needs: [image-build]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Download exact image built by CI
+        uses: actions/download-artifact@v4
+        with:
+          name: auctionhub-image
+
+      - name: Load image
+        run: docker load -i auctionhub-image.tar
+
+      - name: Scan image
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: image
+          image-ref: auctionhub:${{ github.sha }}
+          format: sarif
+          output: trivy-image-report.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload image scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-scan-report
+          path: trivy-image-report.sarif
+          if-no-files-found: warn
+
+  publish:
+    name: Publish verified image to GHCR
+    needs:
+      - quality
+      - tests
+      - migrations
+      - backup-restore
+      - security
+      - container-check
+      - image-build
+      - image-scan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Download verified image
+        uses: actions/download-artifact@v4
+        with:
+          name: auctionhub-image
+
+      - name: Load image
+        run: docker load -i auctionhub-image.tar
+
+      - name: Login to GitHub Container Registry
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Publish image tagged with commit SHA
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/auctionhub"
+          docker tag "auctionhub:${GITHUB_SHA}" "${IMAGE}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE}:sha-${GITHUB_SHA}"
