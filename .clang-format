@@ -11,6 +11,7 @@ UseTab: Never
 ColumnLimit: 100
 
 BreakBeforeBraces: Attach
+SpaceBeforeCpp11BracedList: true
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false

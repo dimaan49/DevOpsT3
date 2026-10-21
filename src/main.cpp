@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
     for (int fd : terminationPipe) {
         const int flags = ::fcntl(fd, F_GETFL, 0);
-        if (flags == -1 || ::fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        if (flags == -1 || ::fcntl(fd, F_SETFL, flags | static_cast<int>(O_NONBLOCK)) == -1) {
             qCritical() << "Cannot configure termination pipe";
             ::close(terminationPipe[0]);
             ::close(terminationPipe[1]);
@@ -153,6 +153,14 @@ int main(int argc, char* argv[]) {
 
         return QHttpServerResponse(obj, code);
     });
+
+    httpServer.route("/version", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QJsonObject obj;
+        obj["service"] = "auctionhub";
+        obj["version"] = qEnvironmentVariable("AUCTIONHUB_VERSION", "dev");
+        return QHttpServerResponse(obj, QHttpServerResponse::StatusCode::Ok);
+    });
+
     httpServer.route("/", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
         QFile f("web/index.html");
         if (!f.open(QIODevice::ReadOnly)) {

@@ -26,9 +26,10 @@ if grep -Eiq '(^|[[:space:]])(FROM|image:).*:latest([[:space:]@]|$)' Dockerfile 
   fail "Floating latest image tags are forbidden"
 fi
 
-grep -q 'image: auctionhub:1.0.0' compose.yaml \
-  || fail "App image must have an explicit version tag"
-
+if ! grep -Eq 'image: \$\{AUCTIONHUB_IMAGE:-[^}]+\}' compose.yaml \
+   && ! grep -q 'image: auctionhub:1.0.0' compose.yaml; then
+    fail "App image must have an explicit version tag or a variable with a fallback tag"
+fi
 if grep -Eiq '^[[:space:]]*(COPY|ADD)[[:space:]].*\.env' Dockerfile; then
   fail "Dockerfile must not copy .env files directly"
 fi
