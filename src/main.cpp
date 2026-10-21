@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    struct sigaction action {};
+    struct sigaction action{};
     action.sa_handler = handleTerminationSignal;
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_RESTART;
@@ -154,13 +154,12 @@ int main(int argc, char* argv[]) {
         return QHttpServerResponse(obj, code);
     });
 
-    httpServer.route("/version", QHttpServerRequest::Method::Get,
-        [](const QHttpServerRequest &) {
-            QJsonObject obj;
-            obj["service"] = "auctionhub";
-            obj["version"] = qEnvironmentVariable("AUCTIONHUB_VERSION", "dev");
-            return QHttpServerResponse(obj, QHttpServerResponse::StatusCode::Ok);
-        });
+    httpServer.route("/version", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
+        QJsonObject obj;
+        obj["service"] = "auctionhub";
+        obj["version"] = qEnvironmentVariable("AUCTIONHUB_VERSION", "dev");
+        return QHttpServerResponse(obj, QHttpServerResponse::StatusCode::Ok);
+    });
 
     httpServer.route("/", QHttpServerRequest::Method::Get, [](const QHttpServerRequest&) {
         QFile f("web/index.html");
