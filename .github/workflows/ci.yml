@@ -282,7 +282,7 @@ jobs:
 
       - name: Build image
         run: |
-          docker compose build app
+          docker compose --env-file .env build app
           IMAGE_ID=$(docker compose images -q app)
           docker tag "$IMAGE_ID" "auctionhub:${GITHUB_SHA}"
           docker save "auctionhub:${GITHUB_SHA}" -o auctionhub-image.tar

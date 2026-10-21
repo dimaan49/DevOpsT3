@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    struct sigaction action{};
+    struct sigaction action {};
     action.sa_handler = handleTerminationSignal;
     sigemptyset(&action.sa_mask);
     action.sa_flags = SA_RESTART;
