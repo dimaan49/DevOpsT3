@@ -280,11 +280,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Create temporary CI configuration
-        run: |
-          umask 077
-          cat > .env <<'ENV'
-          AUCTIONHUB_DB_ADMIN_PASSWORD=ci-admin-password-not-for-production
+    - name: Build image
+      run: |
+        docker compose build app
+        IMAGE_ID=$(docker compose images -q app)
+        docker tag "$IMAGE_ID" "auctionhub:${GITHUB_SHA}"
+        docker save "auctionhub:${GITHUB_SHA}" -o auctionhub-image.tar
           AUCTIONHUB_DB_USER=auctionhub
           AUCTIONHUB_DB_PASSWORD=ci-app-password-not-for-production
           AUCTIONHUB_JWT_SECRET=ci-jwt-secret-not-for-production-012345678901234567890123456789
