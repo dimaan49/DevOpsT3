@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:16.6-bookworm@sha256:557fea37a744d5f4c8faab304b0a90858b53ab119735a88c131fd19dab802f36
     environment:
+      AUCTIONHUB_VERSION: ${AUCTIONHUB_VERSION:-dev}
       POSTGRES_DB: auctionhub
       POSTGRES_USER: auctionhub_admin
       POSTGRES_PASSWORD: ${AUCTIONHUB_DB_ADMIN_PASSWORD:?Set AUCTIONHUB_DB_ADMIN_PASSWORD in .env}
