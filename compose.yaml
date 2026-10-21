@@ -26,7 +26,7 @@ services:
       - no-new-privileges:true
 
   app:
-    image: auctionhub:1.0.0
+    image: ${AUCTIONHUB_IMAGE:-ghcr.io/dimaan49/auctionhub:latest}
     build:
       context: .
       dockerfile: Dockerfile

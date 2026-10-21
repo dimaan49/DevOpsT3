@@ -1,0 +1,79 @@
+name: Deploy to pre-production
+
+on:
+  workflow_run:
+    workflows: ["AuctionHub CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (e.g. sha-abc1234)'
+        required: true
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: deploy-preprod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to dockerchine-devop
+    runs-on: ubuntu-24.04
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    environment: preprod
+    steps:
+      - name: Resolve image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=sha-${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /home/deployer/auctionhub
+
+            echo "Deploying image tag: ${{ steps.tag.outputs.tag }}"
+
+            export AUCTIONHUB_VERSION="${{ steps.tag.outputs.tag }}"
+            export AUCTIONHUB_IMAGE="ghcr.io/dimaan49/auctionhub:${AUCTIONHUB_VERSION}"
+
+            docker compose pull app
+            docker compose up -d --no-build app
+
+            # ждём, пока healthcheck не станет healthy
+            for i in $(seq 1 30); do
+              if curl -sf http://localhost:8080/health > /dev/null; then
+                break
+              fi
+              sleep 2
+            done
+
+            # проверка health
+            curl -sf http://localhost:8080/health
+
+            # проверка версии
+            DEPLOYED_VERSION=$(curl -sf http://localhost:8080/version | jq -r .version)
+            echo "Deployed version: ${DEPLOYED_VERSION}"
+
+            if [ "${DEPLOYED_VERSION}" != "${{ steps.tag.outputs.tag }}" ]; then
+              echo "Version mismatch: expected ${{ steps.tag.outputs.tag }}, got ${DEPLOYED_VERSION}"
+              exit 1
+            fi
+
+            echo "Deployment verified successfully"
