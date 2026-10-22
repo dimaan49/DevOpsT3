@@ -22,7 +22,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to dockerchine-devop
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted 
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
