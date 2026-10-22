@@ -26,6 +26,9 @@ services:
 
   app:
     image: ${AUCTIONHUB_IMAGE:-ghcr.io/dimaan49/auctionhub:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       AUCTIONHUB_HOST: 0.0.0.0
       AUCTIONHUB_PORT: "8080"
