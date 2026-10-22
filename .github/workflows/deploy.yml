@@ -59,7 +59,7 @@ jobs:
             echo "AUCTIONHUB_VERSION=${TAG}" >> .env
 
             docker compose pull app
-            docker compose up -d --no-build app
+            docker compose up -d --no-build --force-recreate app
 
             for i in $(seq 1 30); do
               if curl -sf http://localhost:8080/health > /dev/null; then
