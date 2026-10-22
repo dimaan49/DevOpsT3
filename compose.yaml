@@ -2,7 +2,6 @@ services:
   db:
     image: postgres:16.6-bookworm@sha256:557fea37a744d5f4c8faab304b0a90858b53ab119735a88c131fd19dab802f36
     environment:
-      AUCTIONHUB_VERSION: ${AUCTIONHUB_VERSION:-dev}
       POSTGRES_DB: auctionhub
       POSTGRES_USER: auctionhub_admin
       POSTGRES_PASSWORD: ${AUCTIONHUB_DB_ADMIN_PASSWORD:?Set AUCTIONHUB_DB_ADMIN_PASSWORD in .env}
@@ -27,11 +26,7 @@ services:
 
   app:
     image: ${AUCTIONHUB_IMAGE:-ghcr.io/dimaan49/auctionhub:latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
     environment:
-      AUCTIONHUB_VERSION: ${AUCTIONHUB_VERSION:-dev}     
       AUCTIONHUB_HOST: 0.0.0.0
       AUCTIONHUB_PORT: "8080"
       AUCTIONHUB_DB_HOST: db
@@ -41,6 +36,7 @@ services:
       AUCTIONHUB_DB_PASSWORD: ${AUCTIONHUB_DB_PASSWORD:?Set AUCTIONHUB_DB_PASSWORD in .env}
       AUCTIONHUB_JWT_SECRET: ${AUCTIONHUB_JWT_SECRET:?Set AUCTIONHUB_JWT_SECRET in .env}
       AUCTIONHUB_LOG_LEVEL: ${AUCTIONHUB_LOG_LEVEL:-info}
+      AUCTIONHUB_VERSION: ${AUCTIONHUB_VERSION:-dev}
     depends_on:
       db:
         condition: service_healthy
