@@ -1,0 +1,7 @@
+---
+# Строгий профиль: запрещает command/shell без changed_when, голые модули без FQCN,
+# файлы без явных прав и т.д. Ослаблять профиль можно только через PR с согласованием владельца.
+profile: production
+exclude_paths:
+  - .github/
+  - inventories/*/group_vars/all/vault.yml
