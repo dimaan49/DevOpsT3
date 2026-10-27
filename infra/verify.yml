@@ -36,22 +36,27 @@
   become: false
   tags: [verify]
   tasks:
-    - name: Request /health from the controller (checks network path and firewall too)
+    - name: Request /health from the controller
       ansible.builtin.uri:
         url: "http://{{ ansible_host }}:{{ app_port }}/health"
         method: GET
         return_content: true
         status_code: 200
       delegate_to: localhost
+      check_mode: false
       register: verify_health
       retries: 30
       delay: 10
       until: verify_health.status is defined and verify_health.status == 200
       changed_when: false
-
+    - name: Show health response
+      ansible.builtin.debug:
+        var: verify_health
     - name: Assert that the application and its database report ok
       ansible.builtin.assert:
         that:
+          - verify_health.status == 200
           - verify_health.json.status == 'ok'
           - verify_health.json.database == 'ok'
-        success_msg: "AuctionHub is healthy: {{ verify_health.json }}"
+        success_msg: "AuctionHub is healthy"
+        fail_msg: "Health check failed. See the preceding response debug output."
