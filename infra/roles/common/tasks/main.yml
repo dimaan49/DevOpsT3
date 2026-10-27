@@ -1,0 +1,41 @@
+---
+- name: Install base packages
+  ansible.builtin.apt:
+    name: "{{ common_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Ensure service group exists
+  ansible.builtin.group:
+    name: "{{ service_group }}"
+    system: true
+    state: present
+
+- name: Ensure service user exists (no shell, no home, no sudo)
+  ansible.builtin.user:
+    name: "{{ service_user }}"
+    group: "{{ service_group }}"
+    system: true
+    shell: /usr/sbin/nologin
+    create_home: false
+    state: present
+
+- name: Ensure admin SSH public keys are present
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    key: "{{ item }}"
+    state: present
+  loop: "{{ common_ssh_authorized_keys }}"
+
+- name: Install sshd hardening drop-in
+  ansible.builtin.template:
+    src: sshd-hardening.conf.j2
+    dest: /etc/ssh/sshd_config.d/00-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    # Конфиг проверяется до установки: сломанный файл не попадёт на узел.
+    validate: /usr/sbin/sshd -t -f %s
+  when: common_ssh_harden | bool
+  notify: Restart sshd

@@ -1,0 +1,24 @@
+---
+# Docker и Compose из репозиториев Ubuntu: работают на arm64 и не требуют внешних ключей/репозиториев.
+# Пользователей в группу docker не добавляем: доступ к docker = root-доступ.
+- name: Install Docker engine and Compose plugin
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Configure Docker daemon (log rotation, no-new-privileges)
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart docker
+
+- name: Ensure Docker is enabled and running
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true

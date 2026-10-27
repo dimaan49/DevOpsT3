@@ -1,0 +1,3 @@
+---
+# Список словарей: port, from (CIDR или 'any'), comment. Задаётся в group_vars.
+firewall_rules: []
