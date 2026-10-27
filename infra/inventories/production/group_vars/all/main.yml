@@ -7,7 +7,7 @@ ssh_allowed_cidr: 192.168.3.0/24
 common_ssh_authorized_keys: ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQDm6d6JZ1vf8FDJYvF3vF6lKx2h/1COtxyZ06qO2fF auctionhub-ci"]
 
 app_repo_url: https://github.com/dimaan49/DevOpsT3.git
-app_git_ref: v1.0.0                 #существующий тег или SHA коммита (повторяемость!)
+app_git_ref: v1.0.0                 # существующий тег или SHA коммита (повторяемость!)
 app_port: 8080
 app_log_level: info
 app_mem_limit: 512m
