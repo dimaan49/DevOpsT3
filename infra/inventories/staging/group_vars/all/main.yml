@@ -4,7 +4,7 @@ env_name: staging
 
 ansible_user: azvyagintsev
 ssh_allowed_cidr: 192.168.3.0/24
-common_ssh_authorized_keys: []
+common_ssh_authorized_keys: ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGQDm6d6JZ1vf8FDJYvF3vF6lKx2h/1COtxyZ06qO2fF auctionhub-ci"]
 
 # Приложение
 app_repo_url: https://github.com/dimaan49/DevOpsT3.git
