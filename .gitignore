@@ -82,3 +82,6 @@ infra/*.retry
 infra/second-run.log
 *.pass
 .vault_pass*
+
+#macos
+*.DS_Store
