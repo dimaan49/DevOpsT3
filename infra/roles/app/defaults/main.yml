@@ -1,0 +1,9 @@
+---
+app_base_dir: "/opt/{{ project_name }}-{{ env_name }}/app"
+app_src_dir: "{{ app_base_dir }}/src"
+app_compose_project: "{{ project_name }}-{{ env_name }}-app"
+app_image_name: "{{ project_name }}"
+# Тег образа = версия кода: при смене app_git_ref образ пересобирается, иначе — нет.
+app_image_tag: "{{ app_git_ref | regex_replace('[^A-Za-z0-9_.-]', '-') }}"
+app_bind_ip: "{{ node_ip }}"
+app_db_host: "{{ hostvars[groups['db'][0]].node_ip }}"

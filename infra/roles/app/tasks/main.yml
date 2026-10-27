@@ -1,0 +1,41 @@
+---
+- name: Create application stack directory
+  ansible.builtin.file:
+    path: "{{ app_base_dir }}"
+    state: directory
+    owner: root
+    group: "{{ service_group }}"
+    mode: "0750"
+
+# Код фиксируется на app_git_ref: тег или коммит дают повторяемый результат.
+- name: Fetch application source at the pinned ref
+  ansible.builtin.git:
+    repo: "{{ app_repo_url }}"
+    dest: "{{ app_src_dir }}"
+    version: "{{ app_git_ref }}"
+    force: false
+
+- name: Render compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ app_base_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0640"
+
+- name: Render secret environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+# Первый запуск собирает образ на самом узле (arm64) — это может занять 10–30 минут.
+- name: Build image and start application container
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_base_dir }}"
+    files:
+      - compose.yml
+    state: present
