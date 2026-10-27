@@ -1,0 +1,57 @@
+---
+# Проверки после настройки. Можно запускать отдельно:
+#   ansible-playbook -i inventories/<env>/hosts.yml verify.yml
+
+- name: Check that only allowed TCP ports listen on external addresses
+  hosts: all
+  become: false
+  tags: [verify]
+  tasks:
+    - name: Collect listening TCP sockets (read-only)
+      ansible.builtin.command: ss -H -tln
+      register: verify_listen
+      changed_when: false
+      check_mode: false
+
+    - name: Extract ports that listen on non-loopback addresses
+      ansible.builtin.set_fact:
+        verify_open_ports: >-
+          {{ verify_listen.stdout_lines
+             | map('regex_replace', '^\S+\s+\d+\s+\d+\s+(\S+)\s+\S+$', '\1')
+             | reject('match', '^(127\.|\[::1\])')
+             | map('regex_replace', '^.*:(\d+)$', '\1')
+             | map('int') | unique | sort | list }}
+
+    - name: Fail if unexpected ports are open
+      ansible.builtin.assert:
+        that:
+          - (verify_open_ports | difference(verify_allowed_ports | map('int') | list)) | length == 0
+        fail_msg: >-
+          Unexpected listening ports: {{ verify_open_ports | difference(verify_allowed_ports | map('int') | list) }}.
+          Allowed: {{ verify_allowed_ports }}
+        success_msg: "Open ports {{ verify_open_ports }} are within the allowed list"
+
+- name: Check application availability
+  hosts: app
+  become: false
+  tags: [verify]
+  tasks:
+    - name: Request /health from the controller (checks network path and firewall too)
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}:{{ app_port }}/health"
+        method: GET
+        return_content: true
+        status_code: 200
+      delegate_to: localhost
+      register: verify_health
+      retries: 30
+      delay: 10
+      until: verify_health.status is defined and verify_health.status == 200
+      changed_when: false
+
+    - name: Assert that the application and its database report ok
+      ansible.builtin.assert:
+        that:
+          - verify_health.json.status == 'ok'
+          - verify_health.json.database == 'ok'
+        success_msg: "AuctionHub is healthy: {{ verify_health.json }}"
