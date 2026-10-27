@@ -1,0 +1,33 @@
+---
+# ===== ОКРУЖЕНЧЕСКИЕ параметры: staging =====
+env_name: staging
+
+ansible_user: azvyagintsev
+ssh_allowed_cidr: 192.168.3.0/24
+common_ssh_authorized_keys: []
+
+# Приложение
+app_repo_url: https://github.com/dimaan49/DevOpsT3.git
+app_git_ref: main                   # staging может идти за веткой; production — только тег/коммит
+app_port: 8081
+app_log_level: debug
+app_mem_limit: 512m
+app_cpus: "1.0"
+app_allowed_cidr: 192.168.3.0/24
+
+# База данных
+db_name: auctionhub
+db_admin_user: auctionhub_admin
+db_app_user: auctionhub
+db_port: 5433
+db_mem_limit: 512m
+db_cpus: "1.0"
+
+# Допустимые порты на «внешних» адресах (проверяет verify.yml).
+# Оба окружения живут на одних и тех же ВМ, поэтому порты второго окружения терпимы.
+verify_extra_allowed_ports: [8080, 5432]
+
+# ===== СЕКРЕТЫ: значения только из vault.yml (зашифрован ansible-vault) =====
+db_admin_password: "{{ vault_db_admin_password }}"
+db_app_password: "{{ vault_db_app_password }}"
+app_jwt_secret: "{{ vault_app_jwt_secret }}"

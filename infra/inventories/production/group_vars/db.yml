@@ -1,0 +1,7 @@
+---
+# PostgreSQL доступен только с app-узла.
+firewall_rules: >-
+  {{ firewall_base_rules + [
+       {'port': db_port, 'from': hostvars[groups['app'][0]].node_ip, 'comment': 'PostgreSQL from app node'}
+  ] }}
+verify_allowed_ports: "{{ [ssh_port, db_port] + verify_extra_allowed_ports }}"
