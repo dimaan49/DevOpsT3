@@ -9,3 +9,10 @@
 /scripts/test-migrations.sh @dimaan49
 /scripts/test-backup-restore.sh @dimaan49
 /scripts/container-check.sh @dimaan49
+/infra/ @dimaan49
+/infra/roles/ @dimaan49
+/infra/roles/**/templates/ @dimaan49
+/infra/inventories/*/group_vars/all/vault.yml @dimaan49
+/infra/policy-check.sh @dimaan49
+/infra/.ansible-lint @dimaan49
+/infra/POLICY.md @dimaan49

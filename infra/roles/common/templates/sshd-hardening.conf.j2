@@ -1,0 +1,9 @@
+# Управляется Ansible (роль common). Ручные правки будут перезаписаны.
+# Файл с префиксом 00- читается раньше остальных: у sshd действует первое найденное значение.
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+X11Forwarding no
+MaxAuthTries 3
+AllowUsers {{ common_ssh_allowed_users | join(' ') }}

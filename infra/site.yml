@@ -1,0 +1,32 @@
+---
+# Главный playbook: подготовка чистой Ubuntu-машины и запуск сервисов.
+# Запуск:  ansible-playbook -i inventories/<env>/hosts.yml site.yml
+
+- name: Base configuration for all nodes
+  hosts: all
+  become: true
+  roles:
+    - role: common
+      tags: [common]
+    - role: docker
+      tags: [docker]
+    - role: firewall
+      tags: [firewall]
+
+- name: Database node
+  hosts: db
+  become: true
+  roles:
+    - role: db
+      tags: [db]
+
+- name: Application node
+  hosts: app
+  become: true
+  roles:
+    - role: app
+      tags: [app]
+
+# Автоматическая проверка результата: открытые порты и доступность приложения.
+- name: Post-deployment verification
+  ansible.builtin.import_playbook: verify.yml

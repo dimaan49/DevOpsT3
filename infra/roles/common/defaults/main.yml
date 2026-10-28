@@ -1,0 +1,12 @@
+---
+common_packages:
+  - ca-certificates
+  - curl
+  - git
+  - ufw
+# true — применить жёсткие настройки sshd. На первом запуске убедитесь,
+# что вход по ключу работает, иначе можно потерять доступ.
+common_ssh_harden: true
+common_ssh_allowed_users:
+  - "{{ ansible_user }}"
+common_ssh_authorized_keys: []

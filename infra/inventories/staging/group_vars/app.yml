@@ -1,0 +1,6 @@
+---
+firewall_rules: >-
+  {{ firewall_base_rules + [
+       {'port': app_port, 'from': app_allowed_cidr, 'comment': 'AuctionHub HTTP API'}
+  ] }}
+verify_allowed_ports: "{{ [ssh_port, app_port] + verify_extra_allowed_ports }}"

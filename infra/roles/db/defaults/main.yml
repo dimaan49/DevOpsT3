@@ -1,0 +1,6 @@
+---
+db_base_dir: "/opt/{{ project_name }}-{{ env_name }}/db"
+db_compose_project: "{{ project_name }}-{{ env_name }}-db"
+# Слушаем только на host-only адресе узла, а не на всех интерфейсах.
+db_bind_ip: "{{ node_ip }}"
+db_postgres_image: "{{ postgres_image }}"

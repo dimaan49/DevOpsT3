@@ -75,3 +75,13 @@ test-report.xml
 #backups
 backups/
 *sql.gz
+
+#ansible
+infra/.venv/
+infra/*.retry
+infra/second-run.log
+*.pass
+.vault_pass*
+
+#macos
+*.DS_Store

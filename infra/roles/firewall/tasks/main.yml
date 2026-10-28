@@ -1,0 +1,27 @@
+---
+- name: Deny all incoming traffic by default
+  community.general.ufw:
+    default: deny
+    direction: incoming
+
+- name: Allow all outgoing traffic by default
+  community.general.ufw:
+    default: allow
+    direction: outgoing
+
+# Правила добавляются ДО включения ufw, чтобы не оборвать текущую SSH-сессию.
+- name: Allow only the required ports
+  community.general.ufw:
+    rule: allow
+    proto: tcp
+    port: "{{ item.port | string }}"
+    from_ip: "{{ item.from | default('any') }}"
+    comment: "{{ item.comment }}"
+  loop: "{{ firewall_rules }}"
+  loop_control:
+    label: "{{ item.comment }}"
+
+- name: Enable ufw with low-level logging
+  community.general.ufw:
+    state: enabled
+    logging: low

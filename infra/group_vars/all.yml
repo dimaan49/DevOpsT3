@@ -1,0 +1,20 @@
+---
+# ===== ОБЩИЕ параметры (одинаковы для всех окружений и узлов) =====
+project_name: auctionhub
+
+# Учётная запись сервиса: без shell и без sudo.
+service_user: auctionhub
+service_group: auctionhub
+
+ssh_port: 22
+
+# Образ PostgreSQL — тот же, что в compose.yaml репозитория (закреплён по digest).
+# Если pull падает с "no matching manifest for linux/arm64", возьмите digest
+# мультиархитектурного индекса: docker buildx imagetools inspect postgres:16.6-bookworm
+postgres_image: "postgres:16.6-bookworm@sha256:557fea37a744d5f4c8faab304b0a90858b53ab119735a88c131fd19dab802f36"
+
+# Базовые правила файрвола (SSH). Правила ролей добавляются в group_vars app/db.
+firewall_base_rules:
+  - port: "{{ ssh_port }}"
+    from: "{{ ssh_allowed_cidr }}"
+    comment: "SSH"

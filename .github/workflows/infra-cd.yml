@@ -1,0 +1,156 @@
+name: Infrastructure CD
+
+on:
+  pull_request:
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-cd.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-cd.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Выполняется на каждом PR и push: код инфраструктуры проверяется до любого применения.
+  lint:
+    name: Lint and policy checks
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned tooling
+        run: |
+          pip install -r requirements.txt
+          ansible-galaxy collection install -r requirements.yml
+
+      - name: Infrastructure policy checks
+        run: bash policy-check.sh
+
+      - name: yamllint
+        run: yamllint .
+
+      - name: ansible-lint (production profile)
+        run: ansible-lint
+
+      - name: Syntax check (both environments)
+        run: |
+          for env in staging production; do
+            ansible-playbook -i "inventories/${env}/hosts.yml" site.yml --syntax-check
+          done
+
+  # Применение — только на self-hosted раннере, у которого есть сетевой доступ к ВМ.
+  # Запускается только из main (не из PR), чтобы код из форков не выполнялся на вашей машине.
+  deploy-staging:
+    name: Deploy to staging
+    needs: [lint]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, infra]
+    environment: staging
+    concurrency:
+      group: infra-deploy
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set credential file paths
+        run: |
+          echo "ANSIBLE_PRIVATE_KEY_FILE=${RUNNER_TEMP}/deploy_key" >> "$GITHUB_ENV"
+          echo "ANSIBLE_VAULT_PASSWORD_FILE=${RUNNER_TEMP}/vault_pass" >> "$GITHUB_ENV"
+
+      - name: Install pinned tooling
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -r requirements.txt
+          "${RUNNER_TEMP}/venv/bin/ansible-galaxy" collection install -r requirements.yml
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
+
+      - name: Write credentials (removed at the end of the job)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          umask 077
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ANSIBLE_PRIVATE_KEY_FILE"
+          printf '%s\n' "$VAULT_PASSWORD" > "$ANSIBLE_VAULT_PASSWORD_FILE"
+
+      - name: Apply configuration
+        run: ansible-playbook -i inventories/staging/hosts.yml site.yml --diff
+
+      - name: Idempotency check (second run must change nothing)
+        run: |
+          set -o pipefail
+          ansible-playbook -i inventories/staging/hosts.yml site.yml | tee second-run.log
+          if grep -E '^\S+\s+: ok=[0-9]+\s+changed=[1-9]' second-run.log; then
+            echo "Second run changed something: the configuration is not idempotent"
+            exit 1
+          fi
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$ANSIBLE_PRIVATE_KEY_FILE" "$ANSIBLE_VAULT_PASSWORD_FILE"
+
+  # Для environment "production" в настройках GitHub включите Required reviewers:
+  # job не начнётся, пока согласующий не подтвердит запуск.
+  deploy-production:
+    name: Deploy to production
+    needs: [deploy-staging]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, infra]
+    environment: production
+    concurrency:
+      group: infra-deploy
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          
+      - name: Set credential file paths
+        run: |
+          echo "ANSIBLE_PRIVATE_KEY_FILE=${RUNNER_TEMP}/deploy_key" >> "$GITHUB_ENV"
+          echo "ANSIBLE_VAULT_PASSWORD_FILE=${RUNNER_TEMP}/vault_pass" >> "$GITHUB_ENV"
+
+      - name: Install pinned tooling
+        run: |
+          python3 -m venv "${RUNNER_TEMP}/venv"
+          "${RUNNER_TEMP}/venv/bin/pip" install -r requirements.txt
+          "${RUNNER_TEMP}/venv/bin/ansible-galaxy" collection install -r requirements.yml
+          echo "${RUNNER_TEMP}/venv/bin" >> "$GITHUB_PATH"
+
+      - name: Write credentials (removed at the end of the job)
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          umask 077
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$ANSIBLE_PRIVATE_KEY_FILE"
+          printf '%s\n' "$VAULT_PASSWORD" > "$ANSIBLE_VAULT_PASSWORD_FILE"
+
+      - name: Apply configuration
+        run: ansible-playbook -i inventories/production/hosts.yml site.yml --diff
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "$ANSIBLE_PRIVATE_KEY_FILE" "$ANSIBLE_VAULT_PASSWORD_FILE"

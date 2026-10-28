@@ -1,0 +1,27 @@
+# Управляется Ansible (роль db). Ручные правки будут перезаписаны.
+name: {{ db_compose_project }}
+
+services:
+  db:
+    image: {{ db_postgres_image }}
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./01-create-app-user.sh:/docker-entrypoint-initdb.d/01-create-app-user.sh:ro
+    ports:
+      - "{{ db_bind_ip }}:{{ db_port }}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+    mem_limit: {{ db_mem_limit }}
+    cpus: {{ db_cpus }}
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:

@@ -1,0 +1,48 @@
+---
+- name: Create database stack directory
+  ansible.builtin.file:
+    path: "{{ db_base_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+# Копия docker/postgres/01-create-app-user.sh из репозитория приложения:
+# создаёт прикладную роль с минимальными правами при первой инициализации тома.
+- name: Install DB init script
+  ansible.builtin.copy:
+    src: 01-create-app-user.sh
+    dest: "{{ db_base_dir }}/01-create-app-user.sh"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Render compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ db_base_dir }}/compose.yml"
+    owner: root
+    group: root
+    mode: "0640"
+
+- name: Render secret environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ db_base_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Start PostgreSQL container
+  community.docker.docker_compose_v2:
+    project_src: "{{ db_base_dir }}"
+    files:
+      - compose.yml
+    state: present
+
+- name: Wait until PostgreSQL accepts connections
+  ansible.builtin.wait_for:
+    host: "{{ db_bind_ip }}"
+    port: "{{ db_port }}"
+    timeout: 120
