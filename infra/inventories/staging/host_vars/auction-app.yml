@@ -1,4 +1,5 @@
 ---
-# ===== УЗЛОВЫЕ параметры: только то, что отличается от узла к узлу =====
-node_ip: 192.168.3.23
+node_ip: 192.168.56.103
 ansible_host: "{{ node_ip }}"
+ansible_user: admin
+ansible_ssh_private_key_file: ~/.ssh/id_ed25519

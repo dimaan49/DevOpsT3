@@ -1,7 +1,7 @@
 ---
 docker_packages:
   - docker.io
-  - docker-compose-v2
+  - docker-compose
 docker_daemon_config:
   log-driver: json-file
   log-opts:
