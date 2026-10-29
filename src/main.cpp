@@ -22,6 +22,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+// DEMO SECRET
+const char* demo_aws_key = "AKIAIOSFODNN7EXAMPLE";
+
 static void loadDotEnv(const QString& path) {
 
     QFile file(path);
