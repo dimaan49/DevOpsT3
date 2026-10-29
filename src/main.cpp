@@ -23,7 +23,7 @@
 #include <unistd.h>
 
 // DEMO SECRET
-const char* demo_aws_key = "AKIAIOSFODNN7EXAMPLE";
+const char* API_KEY = "SUpawMQLAWMAMWDQlamwp=";
 
 static void loadDotEnv(const QString& path) {
 
