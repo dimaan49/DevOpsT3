@@ -1,3 +1,4 @@
 ---
-node_ip: 192.168.3.22
+node_ip: 192.168.56.102
 ansible_host: "{{ node_ip }}"
+ansible_user: admin
