@@ -2,5 +2,5 @@
 
 TEST_CASE("Smoke test: build and run", "[smoke]")
 {
-    REQUIRE(1 + 1 == 2);
+    REQUIRE(1 + 1 == 3);
 }
