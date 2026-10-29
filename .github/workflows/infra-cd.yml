@@ -86,7 +86,7 @@ jobs:
       - name: Write credentials (removed at the end of the job)
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD_STAGING }}
         run: |
           umask 077
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$ANSIBLE_PRIVATE_KEY_FILE"
@@ -142,7 +142,7 @@ jobs:
       - name: Write credentials (removed at the end of the job)
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD_PRODUCTION }}
         run: |
           umask 077
           printf '%s\n' "$DEPLOY_SSH_KEY" > "$ANSIBLE_PRIVATE_KEY_FILE"
