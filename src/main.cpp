@@ -22,9 +22,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-// DEMO SECRET
-const char* API_KEY = "SUpawMQLAWMAMWDQlamwp=";
-
 static void loadDotEnv(const QString& path) {
 
     QFile file(path);
