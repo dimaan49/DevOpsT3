@@ -1,4 +1,4 @@
-name: Deploy to pre-production
+
 
 on:
   workflow_run:
@@ -43,7 +43,7 @@ jobs:
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          key: ${{ secrets.DEPLOY_SSH_KEY_AUCTIONHUB }}
           script: |
             set -euo pipefail
             cd /home/deployer/auctionhub
