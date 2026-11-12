@@ -61,7 +61,7 @@ void handleTerminationSignal(int signalNumber) {
 
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
-	int piszero = 0;
+    int piszero = 0;
     if (::pipe(terminationPipe) != 0) {
         qCritical() << "Cannot create termination pipe";
         return 1;
